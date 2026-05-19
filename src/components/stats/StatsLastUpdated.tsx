@@ -9,13 +9,15 @@ function formatLastUpdated(value?: string | null) {
     return "Last updated: Not synced";
   }
 
-  return `Last updated: ${new Intl.DateTimeFormat("en", {
+  return `Last updated: ${new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
     month: "short",
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
-    timeZone: "UTC",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
+    timeZoneName: "short",
   }).format(new Date(value))}`;
 }
 
