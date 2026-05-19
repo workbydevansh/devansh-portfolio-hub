@@ -81,6 +81,7 @@ function getLeetCodeContestRating(rawJson: Json | null) {
     rootRating ??
     getNumber(getNestedRecordValue(rawJson, ["contest"], "rating")) ??
     getNumber(getNestedRecordValue(rawJson, ["contest"], "contestRating")) ??
+    getNumber(getNestedRecordValue(rawJson, ["user_contest_ranking"], "rating")) ??
     getNumber(getNestedRecordValue(rawJson, ["userContestRanking"], "rating"))
   );
 }
@@ -193,7 +194,9 @@ export function PlatformStatsPanel({ platform, stats }: PlatformStatsPanelProps)
   }
 
   const leetCodeContestRating =
-    platform === "LeetCode" ? getLeetCodeContestRating(stats.raw_json) : null;
+    platform === "LeetCode"
+      ? stats.rating ?? getLeetCodeContestRating(stats.raw_json)
+      : null;
   const leetCodeGlobalRanking =
     platform === "LeetCode" ? getLeetCodeGlobalRanking(stats) : null;
 
