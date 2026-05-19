@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+:root {
+  --background: #05070d;
+  --foreground: #f8fafc;
+  --muted: #94a3b8;
+  --glass: rgba(15, 23, 42, 0.58);
+  --glass-border: rgba(148, 163, 184, 0.2);
+  --glass-glow: rgba(103, 232, 249, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.gradient-aurora {
+  background:
+    linear-gradient(125deg, rgba(20, 184, 166, 0.16), transparent 38%),
+    linear-gradient(230deg, rgba(99, 102, 241, 0.18), transparent 42%),
+    linear-gradient(135deg, #05070d 0%, #111827 52%, #020617 100%);
+}
+
+.gradient-surface {
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.92),
+    rgba(30, 41, 59, 0.72)
+  );
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #f8fafc 0%, #67e8f9 48%, #c4b5fd 100%);
+  background-clip: text;
+  color: transparent;
+}
+
+.glass-card {
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: var(--glass);
+  box-shadow:
+    0 24px 80px rgba(2, 6, 23, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(103, 232, 249, 0.3);
+  background: rgba(15, 23, 42, 0.68);
+  box-shadow:
+    0 28px 90px rgba(2, 6, 23, 0.48),
+    0 0 36px var(--glass-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
