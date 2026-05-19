@@ -20,6 +20,8 @@ import { GlassCard } from "@/components/shared/GlassCard";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import type { SocialLink } from "@/lib/supabase/types";
 
+const defaultEmailAddress = "work.devanshverma@gmail.com";
+
 type ContactCardConfig = {
   label: string;
   platformKeys: string[];
@@ -29,7 +31,7 @@ type ContactCardConfig = {
 const defaultEmailLink: SocialLink = {
   id: "default-email",
   platform: "Email",
-  url: "work.devanshverma@gmail.com",
+  url: defaultEmailAddress,
   display_order: -1,
   created_at: null,
 };
@@ -86,11 +88,20 @@ function isEmailPlatform(platform: string) {
   return ["email", "mail"].includes(normalizePlatform(platform));
 }
 
+function createGmailComposeHref(emailAddress: string) {
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+    emailAddress,
+  )}`;
+}
+
 function getContactHref(link: SocialLink) {
   const url = link.url.trim();
 
-  if (isEmailPlatform(link.platform) && !url.toLowerCase().startsWith("mailto:")) {
-    return `mailto:${url}`;
+  if (isEmailPlatform(link.platform)) {
+    const emailAddress =
+      url.replace(/^mailto:/i, "").split("?")[0].trim() || defaultEmailAddress;
+
+    return createGmailComposeHref(emailAddress);
   }
 
   return url;
@@ -237,11 +248,7 @@ export default function ContactPage() {
                         {link ? (
                           <a
                             href={getContactHref(link)}
-                            target={
-                              isEmailPlatform(link.platform)
-                                ? undefined
-                                : "_blank"
-                            }
+                            target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition-colors duration-200 hover:text-white"
                           >
