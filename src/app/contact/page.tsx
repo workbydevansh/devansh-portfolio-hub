@@ -26,6 +26,14 @@ type ContactCardConfig = {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 };
 
+const defaultEmailLink: SocialLink = {
+  id: "default-email",
+  platform: "Email",
+  url: "work.devanshverma@gmail.com",
+  display_order: -1,
+  created_at: null,
+};
+
 const contactCards: ContactCardConfig[] = [
   {
     label: "Email",
@@ -146,15 +154,21 @@ export default function ContactPage() {
     };
   }, []);
 
+  const contactLinks = useMemo(() => {
+    const hasEmailLink = socialLinks.some((link) => isEmailPlatform(link.platform));
+
+    return hasEmailLink ? socialLinks : [defaultEmailLink, ...socialLinks];
+  }, [socialLinks]);
+
   const socialLinksByPlatform = useMemo(() => {
     const map = new Map<string, SocialLink>();
 
-    for (const link of socialLinks) {
+    for (const link of contactLinks) {
       map.set(normalizePlatform(link.platform), link);
     }
 
     return map;
-  }, [socialLinks]);
+  }, [contactLinks]);
 
   async function handleCopyPortfolioUrl() {
     const portfolioUrl = window.location.origin;
@@ -198,7 +212,7 @@ export default function ContactPage() {
                 <p className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
                   Loading contact links...
                 </p>
-              ) : socialLinks.length ? (
+              ) : contactLinks.length ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   {contactCards.map((card) => {
                     const Icon = card.icon;
