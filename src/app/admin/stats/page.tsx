@@ -25,13 +25,15 @@ function formatDate(date: string | null) {
     return "Not synced";
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
     month: "short",
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
-    timeZone: "UTC",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
+    timeZoneName: "short",
   }).format(new Date(date));
 }
 
