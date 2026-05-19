@@ -156,7 +156,11 @@ export async function syncLeetCodeStats(): Promise<SyncLeetCodeResult> {
   const easySolved = getSolvedCount(acSubmissionNum, "Easy");
   const mediumSolved = getSolvedCount(acSubmissionNum, "Medium");
   const hardSolved = getSolvedCount(acSubmissionNum, "Hard");
-  const contestRating = response.data?.userContestRanking?.rating ?? null;
+  const contestRatingValue = response.data?.userContestRanking?.rating ?? null;
+  const contestRating =
+    typeof contestRatingValue === "number"
+      ? Math.round(contestRatingValue)
+      : null;
   const globalRanking =
     response.data?.userContestRanking?.globalRanking ??
     matchedUser.profile?.ranking ??
