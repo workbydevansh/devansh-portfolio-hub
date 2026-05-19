@@ -6,6 +6,9 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Project } from "@/lib/supabase/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getProjects(): Promise<Project[]> {
   const hasSupabaseEnv =
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
