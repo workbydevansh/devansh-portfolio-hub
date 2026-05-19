@@ -74,12 +74,18 @@ function normalizePlatform(platform: string) {
   return platform.trim().toLowerCase();
 }
 
+function isEmailPlatform(platform: string) {
+  return ["email", "mail"].includes(normalizePlatform(platform));
+}
+
 function getContactHref(link: SocialLink) {
-  if (normalizePlatform(link.platform) === "email" && !link.url.startsWith("mailto:")) {
-    return `mailto:${link.url}`;
+  const url = link.url.trim();
+
+  if (isEmailPlatform(link.platform) && !url.toLowerCase().startsWith("mailto:")) {
+    return `mailto:${url}`;
   }
 
-  return link.url;
+  return url;
 }
 
 export default function ContactPage() {
@@ -218,7 +224,7 @@ export default function ContactPage() {
                           <a
                             href={getContactHref(link)}
                             target={
-                              normalizePlatform(link.platform) === "email"
+                              isEmailPlatform(link.platform)
                                 ? undefined
                                 : "_blank"
                             }
