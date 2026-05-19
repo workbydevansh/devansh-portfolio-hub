@@ -6,6 +6,9 @@ import { PlatformStatsPanel } from "@/components/stats/PlatformStatsPanel";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { CodingStats } from "@/lib/supabase/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getCodingStats(): Promise<CodingStats[]> {
   const hasSupabaseEnv =
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -24,9 +27,13 @@ async function getCodingStats(): Promise<CodingStats[]> {
   return (data ?? []) as CodingStats[];
 }
 
-function findPlatformStats(stats: CodingStats[], platform: "codeforces" | "leetcode") {
+function findPlatformStats(
+  stats: CodingStats[],
+  platform: "codeforces" | "leetcode",
+) {
   return stats.find(
-    (item) => item.platform.trim().toLowerCase().replace(/\s+/g, "") === platform,
+    (item) =>
+      item.platform.trim().toLowerCase().replace(/\s+/g, "") === platform,
   );
 }
 
