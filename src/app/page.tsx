@@ -48,7 +48,7 @@ const bentoCards: BentoCard[] = [
   {
     title: "Projects",
     text: "Explore shipped builds, experiments, and technical case studies.",
-    href: "#projects",
+    href: "/projects",
     cta: "View projects",
     icon: BriefcaseBusiness,
     anchorId: "projects",
@@ -57,7 +57,7 @@ const bentoCards: BentoCard[] = [
   {
     title: "Achievements",
     text: "Track milestones, wins, ranks, and proof-backed highlights.",
-    href: "#achievements",
+    href: "/achievements",
     cta: "View achievements",
     icon: Trophy,
     anchorId: "achievements",
@@ -65,7 +65,7 @@ const bentoCards: BentoCard[] = [
   {
     title: "Certificates",
     text: "Browse credentials, courses, and verified learning records.",
-    href: "#certificates",
+    href: "/certificates",
     cta: "View certificates",
     icon: Award,
     anchorId: "certificates",
@@ -73,7 +73,7 @@ const bentoCards: BentoCard[] = [
   {
     title: "Codeforces",
     text: "Competitive programming rating, contests, and progress signals.",
-    href: "#cp-stats",
+    href: "/cp-stats",
     cta: "Open CP stats",
     icon: Code2,
     anchorId: "cp-stats",
@@ -81,14 +81,14 @@ const bentoCards: BentoCard[] = [
   {
     title: "LeetCode",
     text: "Problem-solving stats across easy, medium, and hard tracks.",
-    href: "#cp-stats",
+    href: "/cp-stats",
     cta: "Open CP stats",
     icon: Braces,
   },
   {
     title: "Resume / Links",
     text: "Quick access to resume, profiles, and contact channels.",
-    href: "#contact",
+    href: "/contact",
     cta: "Open links",
     icon: FileText,
     anchorId: "contact",
@@ -111,7 +111,6 @@ const emptyPreview: PreviewState = {
 
 export default function Home() {
   const [preview, setPreview] = useState<PreviewState>(emptyPreview);
-  const [resumeUrl, setResumeUrl] = useState("");
 
   useEffect(() => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -125,12 +124,7 @@ export default function Home() {
     let isMounted = true;
 
     async function loadPreviewData() {
-      const [
-        projectsResult,
-        achievementsResult,
-        certificatesResult,
-        resumeResult,
-      ] =
+      const [projectsResult, achievementsResult, certificatesResult] =
         await Promise.all([
           supabase
             .from("projects")
@@ -150,27 +144,17 @@ export default function Home() {
             .select("*")
             .order("issue_date", { ascending: false })
             .limit(3),
-          supabase
-            .from("portfolio_settings")
-            .select("value")
-            .eq("key", "resume_url")
-            .maybeSingle(),
         ]);
 
       if (!isMounted) {
         return;
       }
 
-      const resumeSetting = resumeResult.data as { value?: unknown } | null;
-
       setPreview({
         projects: projectsResult.data ?? [],
         achievements: achievementsResult.data ?? [],
         certificates: certificatesResult.data ?? [],
       });
-      setResumeUrl(
-        typeof resumeSetting?.value === "string" ? resumeSetting.value : "",
-      );
     }
 
     void loadPreviewData();
@@ -186,7 +170,7 @@ export default function Home() {
       <AnimatedPage>
         <main id="dashboard" className="mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8">
           <HeroSection />
-          <CommandCenter resumeUrl={resumeUrl} />
+          <CommandCenter />
           <PreviewSection preview={preview} />
         </main>
       </AnimatedPage>
@@ -219,9 +203,9 @@ function HeroSection() {
             competitive programming journey.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <HeroButton href="#projects" label="View Projects" />
-            <HeroButton href="#achievements" label="View Achievements" />
-            <HeroButton href="#cp-stats" label="CP Stats" />
+            <HeroButton href="/projects" label="View Projects" />
+            <HeroButton href="/achievements" label="View Achievements" />
+            <HeroButton href="/cp-stats" label="CP Stats" />
           </div>
         </div>
       </GlassCard>
@@ -241,18 +225,7 @@ function HeroButton({ href, label }: { href: string; label: string }) {
   );
 }
 
-function CommandCenter({ resumeUrl }: { resumeUrl: string }) {
-  const cards = bentoCards.map((card) =>
-    card.title === "Resume / Links" && resumeUrl
-      ? {
-          ...card,
-          href: resumeUrl,
-          cta: "Open resume",
-          external: true,
-        }
-      : card,
-  );
-
+function CommandCenter() {
   return (
     <motion.section className="py-12 sm:py-16" {...fadeUp}>
       <div className="mb-6">
@@ -262,7 +235,7 @@ function CommandCenter({ resumeUrl }: { resumeUrl: string }) {
         </h2>
       </div>
       <div className="grid gap-4 md:grid-cols-4">
-        {cards.map((card) => (
+        {bentoCards.map((card) => (
           <BentoCard key={card.title} card={card} />
         ))}
       </div>
