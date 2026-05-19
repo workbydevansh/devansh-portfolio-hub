@@ -138,7 +138,7 @@ async function fetchLeetCodeStats(username: string) {
 }
 
 export async function syncLeetCodeStats(): Promise<SyncLeetCodeResult> {
-  const username = process.env.LEETCODE_USERNAME;
+  const username = process.env.LEETCODE_USERNAME?.trim();
 
   if (!username) {
     throw new Error("LEETCODE_USERNAME is not configured");
