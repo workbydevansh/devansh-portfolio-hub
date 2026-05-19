@@ -5,14 +5,11 @@ import { motion } from "framer-motion";
 import {
   ArrowUpRight,
   Award,
-  BarChart3,
-  BookOpenCheck,
   Braces,
   BriefcaseBusiness,
   Code2,
   FileText,
   Sparkles,
-  Terminal,
   Trophy,
 } from "lucide-react";
 import Link from "next/link";
@@ -205,34 +202,26 @@ function HeroSection() {
       {...fadeUp}
     >
       <GlassCard className="w-full overflow-hidden p-6 sm:p-10 lg:p-12">
-        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-          <div>
-            <DVLogo className="mb-6 h-14 w-14 text-base" />
-            <p className="mb-4 inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm font-medium text-cyan-200">
-              <Sparkles size={15} />
-              Portfolio Command Center
-            </p>
-            <h1 className="gradient-text text-5xl font-semibold text-white sm:text-6xl lg:text-7xl">
-              Devansh Verma
-            </h1>
-            <p className="mt-5 text-lg font-medium text-slate-100 sm:text-xl">
-              Computer Science Student | Competitive Programmer | AI/Web Builder
-            </p>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-              A living portfolio of my projects, achievements, certificates, and
-              competitive programming journey.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <HeroButton href="#projects" label="View Projects" />
-              <HeroButton href="#achievements" label="View Achievements" />
-              <HeroButton href="#cp-stats" label="CP Stats" />
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-            <SignalCard icon={BarChart3} label="Dashboard" value="Live system" />
-            <SignalCard icon={Terminal} label="Build style" value="AI + Web" />
-            <SignalCard icon={BookOpenCheck} label="Portfolio" value="No-photo hub" />
+        <div className="max-w-3xl">
+          <DVLogo className="mb-6 h-14 w-14 text-base" />
+          <p className="mb-4 inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm font-medium text-cyan-200">
+            <Sparkles size={15} />
+            Portfolio
+          </p>
+          <h1 className="gradient-text text-5xl font-semibold text-white sm:text-6xl lg:text-7xl">
+            Devansh Verma
+          </h1>
+          <p className="mt-5 text-lg font-medium text-slate-100 sm:text-xl">
+            Computer Science Student | Competitive Programmer | AI/ML & Deep Learning Enthusiast
+          </p>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+            A living portfolio of my projects, achievements, certificates, and
+            competitive programming journey.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <HeroButton href="#projects" label="View Projects" />
+            <HeroButton href="#achievements" label="View Achievements" />
+            <HeroButton href="#cp-stats" label="CP Stats" />
           </div>
         </div>
       </GlassCard>
@@ -249,24 +238,6 @@ function HeroButton({ href, label }: { href: string; label: string }) {
       {label}
       <ArrowUpRight size={16} />
     </Link>
-  );
-}
-
-function SignalCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: ComponentType<{ className?: string; size?: number }>;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-      <Icon className="mb-4 text-cyan-200" size={20} />
-      <p className="text-sm text-slate-400">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-white">{value}</p>
-    </div>
   );
 }
 
