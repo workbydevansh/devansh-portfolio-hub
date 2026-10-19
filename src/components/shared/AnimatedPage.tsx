@@ -1,22 +1,13 @@
-"use client";
-
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 type AnimatedPageProps = {
   children: ReactNode;
   className?: string;
 };
 
+// CSS-only entrance: the server-rendered page is visible even before (or
+// without) JavaScript, and the animation only enhances it.
 export function AnimatedPage({ children, className }: AnimatedPageProps) {
-  return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={cn("page-enter", className)}>{children}</div>;
 }

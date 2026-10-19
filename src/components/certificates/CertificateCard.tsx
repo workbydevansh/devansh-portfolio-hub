@@ -1,32 +1,24 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ArrowUpRight, BadgeCheck, CalendarDays } from "lucide-react";
 import { GlassCard } from "@/components/shared/GlassCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import type { Certificate } from "@/lib/supabase/types";
+import { safeUrl } from "@/lib/url";
+import { formatDate } from "@/lib/utils";
 
 type CertificateCardProps = {
   certificate: Certificate;
 };
 
-function formatDate(date: string | null) {
-  if (!date) {
-    return "Not added";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(date));
-}
 
 export function CertificateCard({ certificate }: CertificateCardProps) {
+  const certificateUrl = safeUrl(certificate.certificate_url);
+  const credentialUrl = safeUrl(certificate.credential_url);
+
   return (
-    <motion.article whileHover={{ scale: 1.01 }} transition={{ duration: 0.2 }}>
-      <GlassCard className="h-full p-5">
+    <article className="h-full">
+      <GlassCard className="glass-card-interactive h-full p-5">
         <div className="flex h-full flex-col">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <StatusBadge
@@ -75,31 +67,31 @@ export function CertificateCard({ certificate }: CertificateCardProps) {
           </div>
 
           <div className="mt-auto flex flex-wrap gap-3 pt-6">
-            {certificate.certificate_url ? (
+            {certificateUrl ? (
               <a
-                href={certificate.certificate_url}
+                href={certificateUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-sm font-semibold text-cyan-100 transition-colors duration-200 hover:bg-cyan-300/20"
+                className="group inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-sm font-semibold text-cyan-100 transition-[background-color,scale] duration-200 ease-out hover:bg-cyan-300/20 active:scale-[0.96]"
               >
                 View Certificate
-                <ArrowUpRight size={14} />
+                <ArrowUpRight size={14} className="transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </a>
             ) : null}
-            {certificate.credential_url ? (
+            {credentialUrl ? (
               <a
-                href={certificate.credential_url}
+                href={credentialUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-semibold text-slate-100 transition-colors duration-200 hover:bg-white/10"
+                className="group inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-semibold text-slate-100 transition-[background-color,scale] duration-200 ease-out hover:bg-white/10 active:scale-[0.96]"
               >
                 Verify Credential
-                <ArrowUpRight size={14} />
+                <ArrowUpRight size={14} className="transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </a>
             ) : null}
           </div>
         </div>
       </GlassCard>
-    </motion.article>
+    </article>
   );
 }

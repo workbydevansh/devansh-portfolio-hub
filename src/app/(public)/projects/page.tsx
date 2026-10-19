@@ -1,5 +1,3 @@
-import { PublicFooter } from "@/components/layout/PublicFooter";
-import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { ProjectFilters } from "@/components/projects/ProjectFilters";
 import { AnimatedPage } from "@/components/shared/AnimatedPage";
 import { SectionHeading } from "@/components/shared/SectionHeading";
@@ -33,19 +31,15 @@ export default async function ProjectsPage() {
   const projects = await getProjects();
 
   return (
-    <div className="gradient-aurora min-h-screen">
-      <PublicNavbar />
-      <AnimatedPage>
-        <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-          <SectionHeading
-            eyebrow="Projects"
-            title="Project Command Center"
-            description="A focused grid of builds, experiments, and technical work."
-          />
-          <ProjectFilters projects={projects} />
-        </main>
-      </AnimatedPage>
-      <PublicFooter />
-    </div>
+    <AnimatedPage>
+      <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+        <SectionHeading
+          eyebrow="Projects"
+          title="Project Command Center"
+          description="A focused grid of builds, experiments, and technical work."
+        />
+        <ProjectFilters projects={projects} />
+      </main>
+    </AnimatedPage>
   );
 }

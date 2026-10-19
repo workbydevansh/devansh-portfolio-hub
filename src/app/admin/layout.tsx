@@ -1,6 +1,5 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -9,30 +8,17 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { DVLogo } from "@/components/shared/DVLogo";
 import { GlassCard } from "@/components/shared/GlassCard";
+import {
+  getSupabaseBrowserClient,
+  hasSupabaseConfig,
+} from "@/lib/supabase/browser";
+import { getErrorMessage } from "@/lib/utils";
 
 type AdminLayoutProps = {
   children: ReactNode;
 };
 
 type AuthStatus = "checking" | "authorized" | "denied";
-
-function createSupabaseBrowserClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Supabase environment variables are not configured.");
-  }
-
-  return createClient(supabaseUrl, supabaseAnonKey);
-}
-
-function hasSupabaseBrowserConfig() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
-}
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
@@ -47,13 +33,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
 
     async function protectAdminRoute() {
-      if (!hasSupabaseBrowserConfig()) {
+      if (!hasSupabaseConfig) {
         router.replace("/admin/login");
         return;
       }
 
       try {
-        const supabase = createSupabaseBrowserClient();
+        const supabase = getSupabaseBrowserClient();
         const {
           data: { user },
           error: userError,
@@ -77,11 +63,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         setStatus("authorized");
       } catch (caughtError) {
-        setError(
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Unable to verify admin access.",
-        );
+        setError(getErrorMessage(caughtError, "Unable to verify admin access."));
         setStatus("denied");
       }
     }
@@ -90,7 +72,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }, [isLoginPage, router]);
 
   async function handleLogout() {
-    const supabase = createSupabaseBrowserClient();
+    const supabase = getSupabaseBrowserClient();
     await supabase.auth.signOut();
     router.replace("/admin/login");
   }

@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { refreshCertificatePages } from "@/app/admin/actions";
 import { CertificateForm } from "@/components/admin/certificates/CertificateForm";
 
 type EditCertificatePageProps = {
@@ -6,13 +6,6 @@ type EditCertificatePageProps = {
     id: string;
   }>;
 };
-
-async function refreshCertificatePages() {
-  "use server";
-
-  revalidatePath("/certificates");
-  revalidatePath("/admin/certificates");
-}
 
 export default async function EditCertificatePage({
   params,

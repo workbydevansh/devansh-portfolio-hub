@@ -1,7 +1,5 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
-import { motion } from "framer-motion";
 import {
   ArrowUpRight,
   Award,
@@ -13,19 +11,16 @@ import {
   Trophy,
 } from "lucide-react";
 import Link from "next/link";
-import type { ComponentType } from "react";
+import type { ComponentType, CSSProperties } from "react";
 import { useEffect, useState } from "react";
-import { PublicFooter } from "@/components/layout/PublicFooter";
-import { PublicNavbar } from "@/components/layout/PublicNavbar";
-import { AnimatedPage } from "@/components/shared/AnimatedPage";
 import { DVLogo } from "@/components/shared/DVLogo";
 import { GlassCard } from "@/components/shared/GlassCard";
-import type {
-  Achievement,
-  Certificate,
-  Database,
-  Project,
-} from "@/lib/supabase/types";
+import {
+  getSupabaseBrowserClient,
+  hasSupabaseConfig,
+} from "@/lib/supabase/browser";
+import type { Achievement, Certificate, Project } from "@/lib/supabase/types";
+import { cn } from "@/lib/utils";
 
 type PreviewState = {
   projects: Project[];
@@ -96,65 +91,66 @@ const bentoCards: BentoCard[] = [
   },
 ];
 
-const fadeUp = {
-  initial: { opacity: 0, y: 18 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-80px" },
-  transition: { duration: 0.45, ease: "easeOut" },
-} as const;
-
 const emptyPreview: PreviewState = {
   projects: [],
   achievements: [],
   certificates: [],
 };
 
+function revealDelay(ms: number) {
+  return { "--delay": `${ms}ms` } as CSSProperties;
+}
+
 export default function Home() {
   const [preview, setPreview] = useState<PreviewState>(emptyPreview);
+  const [isLoading, setIsLoading] = useState(hasSupabaseConfig);
 
   useEffect(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
+    if (!hasSupabaseConfig) {
       return;
     }
 
-    const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+    const supabase = getSupabaseBrowserClient();
     let isMounted = true;
 
     async function loadPreviewData() {
-      const [projectsResult, achievementsResult, certificatesResult] =
-        await Promise.all([
-          supabase
-            .from("projects")
-            .select("*")
-            .eq("featured", true)
-            .order("display_order", { ascending: true })
-            .order("created_at", { ascending: false })
-            .limit(3),
-          supabase
-            .from("achievements")
-            .select("*")
-            .order("achievement_date", { ascending: false })
-            .order("display_order", { ascending: true })
-            .limit(3),
-          supabase
-            .from("certificates")
-            .select("*")
-            .order("issue_date", { ascending: false })
-            .limit(3),
-        ]);
+      try {
+        const [projectsResult, achievementsResult, certificatesResult] =
+          await Promise.all([
+            supabase
+              .from("projects")
+              .select("*")
+              .eq("featured", true)
+              .order("display_order", { ascending: true })
+              .order("created_at", { ascending: false })
+              .limit(3),
+            supabase
+              .from("achievements")
+              .select("*")
+              .order("achievement_date", { ascending: false })
+              .order("display_order", { ascending: true })
+              .limit(3),
+            supabase
+              .from("certificates")
+              .select("*")
+              .order("issue_date", { ascending: false })
+              .limit(3),
+          ]);
 
-      if (!isMounted) {
-        return;
+        if (!isMounted) {
+          return;
+        }
+
+        setPreview({
+          projects: projectsResult.data ?? [],
+          achievements: achievementsResult.data ?? [],
+          certificates: certificatesResult.data ?? [],
+        });
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-
-      setPreview({
-        projects: projectsResult.data ?? [],
-        achievements: achievementsResult.data ?? [],
-        certificates: certificatesResult.data ?? [],
-      });
     }
 
     void loadPreviewData();
@@ -165,69 +161,86 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="gradient-aurora min-h-screen">
-      <PublicNavbar />
-      <AnimatedPage>
-        <main id="dashboard" className="mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8">
-          <HeroSection />
-          <CommandCenter />
-          <PreviewSection preview={preview} />
-        </main>
-      </AnimatedPage>
-      <PublicFooter />
-    </div>
+    <main id="dashboard" className="mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8">
+      <HeroSection />
+      <CommandCenter />
+      <PreviewSection preview={preview} isLoading={isLoading} />
+    </main>
   );
 }
 
 function HeroSection() {
   return (
-    <motion.section
-      className="flex min-h-[calc(100vh-75px)] items-center py-16 sm:py-20"
-      {...fadeUp}
-    >
+    <section className="flex min-h-[calc(100svh-75px)] items-center py-16 sm:py-20">
       <GlassCard className="w-full overflow-hidden p-6 sm:p-10 lg:p-12">
         <div className="max-w-3xl">
-          <DVLogo className="mb-6 h-14 w-14 text-base" />
-          <p className="mb-4 inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm font-medium text-cyan-200">
+          <div className="reveal" style={revealDelay(0)}>
+            <DVLogo className="mb-6 h-14 w-14 text-base" />
+          </div>
+          <p
+            className="reveal mb-4 inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm font-medium text-cyan-200"
+            style={revealDelay(80)}
+          >
             <Sparkles size={15} />
             Portfolio
           </p>
-          <h1 className="gradient-text text-5xl font-semibold text-white sm:text-6xl lg:text-7xl">
+          <h1
+            className="hero-name gradient-text w-fit text-5xl font-semibold text-white sm:text-6xl lg:text-7xl"
+            style={revealDelay(160)}
+          >
             Devansh Verma
           </h1>
-          <p className="mt-5 text-lg font-medium text-slate-100 sm:text-xl">
+          <p
+            className="reveal mt-5 text-lg font-medium text-slate-100 sm:text-xl"
+            style={revealDelay(520)}
+          >
             Computer Science Student | Competitive Programmer | AI/ML & Deep Learning Enthusiast
           </p>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+          <p
+            className="reveal mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg"
+            style={revealDelay(600)}
+          >
             A living portfolio of my projects, achievements, certificates, and
             competitive programming journey.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <HeroButton href="/projects" label="View Projects" />
-            <HeroButton href="/achievements" label="View Achievements" />
-            <HeroButton href="/cp-stats" label="CP Stats" />
+            <HeroButton href="/projects" label="View Projects" delay={680} />
+            <HeroButton href="/achievements" label="View Achievements" delay={740} />
+            <HeroButton href="/cp-stats" label="CP Stats" delay={800} />
           </div>
         </div>
       </GlassCard>
-    </motion.section>
+    </section>
   );
 }
 
-function HeroButton({ href, label }: { href: string; label: string }) {
+function HeroButton({
+  href,
+  label,
+  delay,
+}: {
+  href: string;
+  label: string;
+  delay: number;
+}) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center justify-center gap-2 rounded-md border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:border-cyan-300/40 hover:bg-cyan-300/15 hover:text-cyan-100"
+      className="reveal group inline-flex items-center justify-center gap-2 rounded-md border border-white/10 bg-white/10 py-3 pl-5 pr-[18px] text-sm font-semibold text-white transition-[color,background-color,border-color,scale] duration-200 ease-out hover:border-cyan-300/40 hover:bg-cyan-300/15 hover:text-cyan-100 active:scale-[0.96]"
+      style={revealDelay(delay)}
     >
       {label}
-      <ArrowUpRight size={16} />
+      <ArrowUpRight
+        size={16}
+        className="transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+      />
     </Link>
   );
 }
 
 function CommandCenter() {
   return (
-    <motion.section className="py-12 sm:py-16" {...fadeUp}>
+    <section className="py-12 sm:py-16">
       <div className="mb-6">
         <p className="text-sm font-medium text-cyan-300">Command Center</p>
         <h2 className="mt-2 text-3xl font-semibold text-white">
@@ -239,23 +252,31 @@ function CommandCenter() {
           <BentoCard key={card.title} card={card} />
         ))}
       </div>
-    </motion.section>
+    </section>
   );
 }
 
 function BentoCard({ card }: { card: BentoCard }) {
   const Icon = card.icon;
+  // The link's ::after stretches over the card, so the whole card is clickable.
+  const linkClassName =
+    "inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition-colors duration-200 group-hover:text-white after:absolute after:inset-0 after:rounded-[inherit] after:content-['']";
+  const linkContent = (
+    <>
+      {card.cta}
+      <ArrowUpRight
+        size={15}
+        className="transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+      />
+    </>
+  );
 
   return (
-    <motion.div
-      id={card.anchorId}
-      whileHover={{ scale: 1.015 }}
-      transition={{ duration: 0.2 }}
-    >
-      <GlassCard className={`h-full p-5 ${card.className ?? ""}`}>
+    <div id={card.anchorId} className={cn("scroll-reveal", card.className)}>
+      <GlassCard className="glass-card-interactive group h-full p-5">
         <div className="flex h-full min-h-44 flex-col justify-between gap-6">
           <div>
-            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg border border-cyan-300/20 bg-cyan-300/10 text-cyan-100">
+            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg border border-cyan-300/20 bg-cyan-300/10 text-cyan-100 transition-[border-color,background-color] duration-300 group-hover:border-cyan-300/40 group-hover:bg-cyan-300/15">
               <Icon size={21} />
             </div>
             <h3 className="text-xl font-semibold text-white">{card.title}</h3>
@@ -266,29 +287,30 @@ function BentoCard({ card }: { card: BentoCard }) {
               href={card.href}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition-colors duration-200 hover:text-white"
+              className={linkClassName}
             >
-              {card.cta}
-              <ArrowUpRight size={15} />
+              {linkContent}
             </a>
           ) : (
-            <Link
-              href={card.href}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition-colors duration-200 hover:text-white"
-            >
-              {card.cta}
-              <ArrowUpRight size={15} />
+            <Link href={card.href} className={linkClassName}>
+              {linkContent}
             </Link>
           )}
         </div>
       </GlassCard>
-    </motion.div>
+    </div>
   );
 }
 
-function PreviewSection({ preview }: { preview: PreviewState }) {
+function PreviewSection({
+  preview,
+  isLoading,
+}: {
+  preview: PreviewState;
+  isLoading: boolean;
+}) {
   return (
-    <motion.section className="py-12 pb-16 sm:py-16 sm:pb-20" {...fadeUp}>
+    <section className="py-12 pb-16 sm:py-16 sm:pb-20">
       <div className="mb-6">
         <p className="text-sm font-medium text-cyan-300">Featured Preview</p>
         <h2 className="mt-2 text-3xl font-semibold text-white">
@@ -300,6 +322,7 @@ function PreviewSection({ preview }: { preview: PreviewState }) {
           title="Featured Projects"
           icon={BriefcaseBusiness}
           items={preview.projects}
+          isLoading={isLoading}
           getTitle={(item) => item.title}
           getText={(item) => item.short_description}
         />
@@ -307,6 +330,7 @@ function PreviewSection({ preview }: { preview: PreviewState }) {
           title="Recent Achievements"
           icon={Trophy}
           items={preview.achievements}
+          isLoading={isLoading}
           getTitle={(item) => item.title}
           getText={(item) => item.rank_or_result ?? item.description}
         />
@@ -314,11 +338,12 @@ function PreviewSection({ preview }: { preview: PreviewState }) {
           title="Certificates"
           icon={Award}
           items={preview.certificates}
+          isLoading={isLoading}
           getTitle={(item) => item.title}
           getText={(item) => item.issuer ?? item.category ?? "Certificate"}
         />
       </div>
-    </motion.section>
+    </section>
   );
 }
 
@@ -326,12 +351,14 @@ function PreviewCard<T>({
   title,
   icon: Icon,
   items,
+  isLoading,
   getTitle,
   getText,
 }: {
   title: string;
   icon: ComponentType<{ className?: string; size?: number }>;
   items: T[];
+  isLoading: boolean;
   getTitle: (item: T) => string;
   getText: (item: T) => string;
 }) {
@@ -343,8 +370,25 @@ function PreviewCard<T>({
         </div>
         <h3 className="text-lg font-semibold text-white">{title}</h3>
       </div>
-      {items.length > 0 ? (
+      {isLoading ? (
         <div className="space-y-3">
+          <p className="sr-only" role="status">
+            Loading {title.toLowerCase()}
+          </p>
+          {[0, 1, 2].map((row) => (
+            <div
+              key={row}
+              aria-hidden="true"
+              className="rounded-lg border border-white/10 bg-white/[0.04] p-4"
+            >
+              <div className="skeleton h-4 w-3/5" />
+              <div className="skeleton mt-3 h-3 w-full" />
+              <div className="skeleton mt-2 h-3 w-4/5" />
+            </div>
+          ))}
+        </div>
+      ) : items.length > 0 ? (
+        <div className="fade-in space-y-3">
           {items.map((item) => (
             <div
               key={getTitle(item)}
@@ -358,7 +402,7 @@ function PreviewCard<T>({
           ))}
         </div>
       ) : (
-        <p className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
+        <p className="fade-in rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
           No records added yet.
         </p>
       )}

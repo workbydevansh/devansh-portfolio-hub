@@ -1,23 +1,13 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import { motion } from "framer-motion";
 import { Loader2, LogIn } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DVLogo } from "@/components/shared/DVLogo";
 import { GlassCard } from "@/components/shared/GlassCard";
-
-function createSupabaseBrowserClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Supabase environment variables are not configured.");
-  }
-
-  return createClient(supabaseUrl, supabaseAnonKey);
-}
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getErrorMessage } from "@/lib/utils";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -32,7 +22,7 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      const supabase = createSupabaseBrowserClient();
+      const supabase = getSupabaseBrowserClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -45,11 +35,7 @@ export default function AdminLoginPage() {
 
       router.replace("/admin");
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to sign in.",
-      );
+      setError(getErrorMessage(caughtError, "Unable to sign in."));
     } finally {
       setIsLoading(false);
     }

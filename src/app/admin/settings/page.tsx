@@ -1,10 +1,27 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import { Pencil, Trash2, Upload } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
+import {
+  FileInput,
+  Notice,
+  TextInput,
+  primaryButtonClassName,
+  secondaryButtonClassName,
+} from "@/components/admin/FormFields";
 import { GlassCard } from "@/components/shared/GlassCard";
+import { isEmailPlatform } from "@/lib/social-links";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { SocialLink } from "@/lib/supabase/types";
+import { useSupabaseQuery } from "@/lib/supabase/useSupabaseQuery";
+import {
+  acceptAttribute,
+  uploadPublicFile,
+  uploadRules,
+  validateUpload,
+} from "@/lib/uploads";
+import { isEmailAddress, isHttpUrl, safeUrl } from "@/lib/url";
+import { getErrorMessage } from "@/lib/utils";
 
 type SocialLinkFormState = {
   platform: string;
@@ -18,157 +35,52 @@ const initialSocialLinkForm: SocialLinkFormState = {
   display_order: "0",
 };
 
-const maxResumeFileSize = 10 * 1024 * 1024;
+const emptySettings = { socialLinks: [] as SocialLink[], resumeUrl: "" };
 
-function createSupabaseBrowserClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+async function loadSettings() {
+  const supabase = getSupabaseBrowserClient();
+  const [links, resumeSetting] = await Promise.all([
+    supabase
+      .from("social_links")
+      .select("*")
+      .order("display_order", { ascending: true })
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("portfolio_settings")
+      .select("value")
+      .eq("key", "resume_url")
+      .maybeSingle(),
+  ]);
+  const resumeUrl = resumeSetting.data?.value;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Supabase environment variables are not configured.");
-  }
-
-  return createClient(supabaseUrl, supabaseAnonKey);
-}
-
-function createResumePath(file: File) {
-  const baseName =
-    file.name
-      .replace(/\.pdf$/i, "")
-      .replace(/[^a-zA-Z0-9-_]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 60) || "resume";
-
-  return `uploads/${crypto.randomUUID()}-${baseName}.pdf`;
-}
-
-function validateResumeFile(file: File | null) {
-  if (!file) {
-    return "Please select a resume PDF.";
-  }
-
-  const isPdf =
-    file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-
-  if (!isPdf) {
-    return "Resume file must be a PDF.";
-  }
-
-  if (file.size > maxResumeFileSize) {
-    return "Resume file size must be 10MB or less.";
-  }
-
-  return "";
+  return {
+    data: {
+      socialLinks: (links.data ?? []) as SocialLink[],
+      resumeUrl: typeof resumeUrl === "string" ? resumeUrl : "",
+    },
+    error: links.error,
+  };
 }
 
 export default function AdminSettingsPage() {
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [formState, setFormState] =
     useState<SocialLinkFormState>(initialSocialLinkForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [resumeUrl, setResumeUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isSavingLink, setIsSavingLink] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const {
+    data: { socialLinks, resumeUrl },
+    error: loadError,
+    isLoading,
+    reload,
+  } = useSupabaseQuery(loadSettings, emptySettings, "Unable to load settings.");
 
-  async function loadSettings() {
-    setError("");
-
-    try {
-      const supabase = createSupabaseBrowserClient();
-      const [{ data: links, error: linksError }, { data: resumeSetting }] =
-        await Promise.all([
-          supabase
-            .from("social_links")
-            .select("*")
-            .order("display_order", { ascending: true })
-            .order("created_at", { ascending: true }),
-          supabase
-            .from("portfolio_settings")
-            .select("value")
-            .eq("key", "resume_url")
-            .maybeSingle(),
-        ]);
-
-      if (linksError) {
-        setError(linksError.message);
-        return;
-      }
-
-      setSocialLinks((links ?? []) as SocialLink[]);
-      setResumeUrl(
-        typeof resumeSetting?.value === "string" ? resumeSetting.value : "",
-      );
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to load settings.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
+  function updateForm(field: keyof SocialLinkFormState, value: string) {
+    setFormState((current) => ({ ...current, [field]: value }));
   }
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadInitialSettings() {
-      try {
-        const supabase = createSupabaseBrowserClient();
-        const [{ data: links, error: linksError }, { data: resumeSetting }] =
-          await Promise.all([
-            supabase
-              .from("social_links")
-              .select("*")
-              .order("display_order", { ascending: true })
-              .order("created_at", { ascending: true }),
-            supabase
-              .from("portfolio_settings")
-              .select("value")
-              .eq("key", "resume_url")
-              .maybeSingle(),
-          ]);
-
-        if (!isMounted) {
-          return;
-        }
-
-        if (linksError) {
-          setError(linksError.message);
-          return;
-        }
-
-        setSocialLinks((links ?? []) as SocialLink[]);
-        setResumeUrl(
-          typeof resumeSetting?.value === "string" ? resumeSetting.value : "",
-        );
-      } catch (caughtError) {
-        if (!isMounted) {
-          return;
-        }
-
-        setError(
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Unable to load settings.",
-        );
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadInitialSettings();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   function startEdit(link: SocialLink) {
     setEditingId(link.id);
@@ -195,7 +107,15 @@ export default function AdminSettingsPage() {
       return "URL is required.";
     }
 
-    return "";
+    if (isEmailPlatform(formState.platform)) {
+      return isEmailAddress(formState.url.trim().replace(/^mailto:/i, ""))
+        ? ""
+        : "Email links must be an email address, like you@example.com.";
+    }
+
+    return isHttpUrl(formState.url)
+      ? ""
+      : "URL must be a full link starting with https:// or http://.";
   }
 
   async function handleSocialLinkSubmit(event: FormEvent<HTMLFormElement>) {
@@ -213,15 +133,15 @@ export default function AdminSettingsPage() {
     setIsSavingLink(true);
 
     try {
-      const supabase = createSupabaseBrowserClient();
+      const socialLinksTable = getSupabaseBrowserClient().from("social_links");
       const payload = {
         platform: formState.platform.trim(),
         url: formState.url.trim(),
         display_order: Number(formState.display_order) || 0,
       };
       const { error: saveError } = editingId
-        ? await supabase.from("social_links").update(payload).eq("id", editingId)
-        : await supabase.from("social_links").insert(payload);
+        ? await socialLinksTable.update(payload).eq("id", editingId)
+        : await socialLinksTable.insert(payload);
 
       if (saveError) {
         setError(saveError.message);
@@ -234,22 +154,16 @@ export default function AdminSettingsPage() {
           : "Social link added successfully.",
       );
       resetSocialLinkForm();
-      await loadSettings();
+      reload();
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to save social link.",
-      );
+      setError(getErrorMessage(caughtError, "Unable to save social link."));
     } finally {
       setIsSavingLink(false);
     }
   }
 
   async function handleDeleteSocialLink(link: SocialLink) {
-    const confirmed = window.confirm(`Delete "${link.platform}" link?`);
-
-    if (!confirmed) {
+    if (!window.confirm(`Delete "${link.platform}" link?`)) {
       return;
     }
 
@@ -257,8 +171,7 @@ export default function AdminSettingsPage() {
     setError("");
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { error: deleteError } = await supabase
+      const { error: deleteError } = await getSupabaseBrowserClient()
         .from("social_links")
         .delete()
         .eq("id", link.id);
@@ -269,13 +182,9 @@ export default function AdminSettingsPage() {
       }
 
       setMessage("Social link deleted successfully.");
-      await loadSettings();
+      reload();
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to delete social link.",
-      );
+      setError(getErrorMessage(caughtError, "Unable to delete social link."));
     }
   }
 
@@ -284,7 +193,12 @@ export default function AdminSettingsPage() {
     setMessage("");
     setError("");
 
-    const validationError = validateResumeFile(resumeFile);
+    if (!resumeFile) {
+      setError("Please select a resume PDF.");
+      return;
+    }
+
+    const validationError = validateUpload(resumeFile, uploadRules.resume);
 
     if (validationError) {
       setError(validationError);
@@ -294,32 +208,10 @@ export default function AdminSettingsPage() {
     setIsUploadingResume(true);
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const file = resumeFile as File;
-      const filePath = createResumePath(file);
-      const { error: uploadError } = await supabase.storage
-        .from("resume")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          contentType: "application/pdf",
-          upsert: false,
-        });
-
-      if (uploadError) {
-        setError(uploadError.message);
-        return;
-      }
-
-      const { data } = supabase.storage.from("resume").getPublicUrl(filePath);
-      const { error: settingError } = await supabase
+      const { publicUrl } = await uploadPublicFile(resumeFile, uploadRules.resume);
+      const { error: settingError } = await getSupabaseBrowserClient()
         .from("portfolio_settings")
-        .upsert(
-          {
-            key: "resume_url",
-            value: data.publicUrl,
-          },
-          { onConflict: "key" },
-        );
+        .upsert({ key: "resume_url", value: publicUrl }, { onConflict: "key" });
 
       if (settingError) {
         setError(settingError.message);
@@ -327,18 +219,16 @@ export default function AdminSettingsPage() {
       }
 
       setResumeFile(null);
-      setResumeUrl(data.publicUrl);
       setMessage("Resume uploaded successfully.");
+      reload();
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to upload resume.",
-      );
+      setError(getErrorMessage(caughtError, "Unable to upload resume."));
     } finally {
       setIsUploadingResume(false);
     }
   }
+
+  const safeResumeUrl = safeUrl(resumeUrl);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
@@ -349,17 +239,8 @@ export default function AdminSettingsPage() {
         </h1>
       </div>
 
-      {message ? (
-        <p className="mb-5 rounded-md border border-emerald-400/25 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-200">
-          {message}
-        </p>
-      ) : null}
-
-      {error ? (
-        <p className="mb-5 rounded-md border border-rose-400/25 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">
-          {error}
-        </p>
-      ) : null}
+      <Notice tone="success" message={message} className="mb-5" />
+      <Notice tone="error" message={error || loadError} className="mb-5" />
 
       {isLoading ? (
         <GlassCard className="p-6 text-center">
@@ -374,42 +255,27 @@ export default function AdminSettingsPage() {
                 <TextInput
                   label="Platform"
                   value={formState.platform}
-                  onChange={(value) =>
-                    setFormState((current) => ({
-                      ...current,
-                      platform: value,
-                    }))
-                  }
+                  onChange={(value) => updateForm("platform", value)}
                   required
                 />
                 <TextInput
                   label="URL"
                   value={formState.url}
-                  onChange={(value) =>
-                    setFormState((current) => ({
-                      ...current,
-                      url: value,
-                    }))
-                  }
+                  onChange={(value) => updateForm("url", value)}
                   required
                 />
                 <TextInput
                   label="Order"
                   type="number"
                   value={formState.display_order}
-                  onChange={(value) =>
-                    setFormState((current) => ({
-                      ...current,
-                      display_order: value,
-                    }))
-                  }
+                  onChange={(value) => updateForm("display_order", value)}
                 />
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <button
                   type="submit"
                   disabled={isSavingLink}
-                  className="inline-flex items-center justify-center rounded-md border border-cyan-300/20 bg-cyan-300/15 px-4 py-3 text-sm font-semibold text-cyan-100 transition-colors duration-200 hover:bg-cyan-300/25 disabled:cursor-not-allowed disabled:opacity-70"
+                  className={primaryButtonClassName}
                 >
                   {isSavingLink
                     ? "Saving..."
@@ -421,7 +287,7 @@ export default function AdminSettingsPage() {
                   <button
                     type="button"
                     onClick={resetSocialLinkForm}
-                    className="inline-flex items-center justify-center rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-slate-100 transition-colors duration-200 hover:bg-white/10"
+                    className={secondaryButtonClassName}
                   >
                     Cancel Edit
                   </button>
@@ -491,38 +357,29 @@ export default function AdminSettingsPage() {
             </p>
 
             <form className="mt-5 space-y-4" onSubmit={handleResumeUpload}>
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-200">
-                  Resume PDF
-                </span>
-                <input
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0] ?? null;
-                    setResumeFile(file);
-                    setError(file ? validateResumeFile(file) : "");
-                  }}
-                  className="w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-slate-200 file:mr-4 file:rounded-md file:border-0 file:bg-cyan-300/15 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-cyan-100 hover:file:bg-cyan-300/25"
-                />
-                <p className="mt-2 text-xs text-slate-400">
-                  PDF only. Max size 10MB.
-                </p>
-              </label>
+              <FileInput
+                label="Resume PDF"
+                accept={acceptAttribute(uploadRules.resume)}
+                hint="PDF only. Max size 10MB."
+                onFileChange={(file) => {
+                  setResumeFile(file);
+                  setError(validateUpload(file, uploadRules.resume));
+                }}
+              />
 
               <button
                 type="submit"
                 disabled={isUploadingResume}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/15 px-4 py-3 text-sm font-semibold text-cyan-100 transition-colors duration-200 hover:bg-cyan-300/25 disabled:cursor-not-allowed disabled:opacity-70"
+                className={`${primaryButtonClassName} w-full`}
               >
                 <Upload size={16} />
                 {isUploadingResume ? "Uploading..." : "Upload Resume"}
               </button>
             </form>
 
-            {resumeUrl ? (
+            {safeResumeUrl ? (
               <a
-                href={resumeUrl}
+                href={safeResumeUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-5 inline-flex text-sm font-semibold text-cyan-200 transition-colors duration-200 hover:text-white"
@@ -538,34 +395,5 @@ export default function AdminSettingsPage() {
         </div>
       )}
     </main>
-  );
-}
-
-function TextInput({
-  label,
-  value,
-  onChange,
-  type = "text",
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-  required?: boolean;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-medium text-slate-200">
-        {label}
-      </span>
-      <input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        required={required}
-        className="w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10"
-      />
-    </label>
   );
 }

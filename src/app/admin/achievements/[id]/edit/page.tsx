@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { refreshAchievementPages } from "@/app/admin/actions";
 import { AchievementForm } from "@/components/admin/achievements/AchievementForm";
 
 type EditAchievementPageProps = {
@@ -6,13 +6,6 @@ type EditAchievementPageProps = {
     id: string;
   }>;
 };
-
-async function refreshAchievementPages() {
-  "use server";
-
-  revalidatePath("/achievements");
-  revalidatePath("/admin/achievements");
-}
 
 export default async function EditAchievementPage({
   params,

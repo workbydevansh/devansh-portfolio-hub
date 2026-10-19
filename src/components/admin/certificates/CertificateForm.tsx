@@ -1,11 +1,27 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import {
+  FileInput,
+  Notice,
+  TextArea,
+  TextInput,
+  primaryButtonClassName,
+  secondaryButtonClassName,
+} from "@/components/admin/FormFields";
 import { GlassCard } from "@/components/shared/GlassCard";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Certificate } from "@/lib/supabase/types";
+import {
+  acceptAttribute,
+  uploadPublicFile,
+  uploadRules,
+  validateUpload,
+} from "@/lib/uploads";
+import { getUrlFieldsError } from "@/lib/url";
+import { getErrorMessage, nullableValue } from "@/lib/utils";
 
 type CertificateFormProps = {
   mode: "create" | "edit";
@@ -37,30 +53,8 @@ const initialFormState: CertificateFormState = {
   file_path: "",
 };
 
-const allowedMimeTypes = [
-  "application/pdf",
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-];
-const allowedExtensions = [".pdf", ".png", ".jpg", ".jpeg", ".webp"];
-const maxFileSize = 10 * 1024 * 1024;
 
-function createSupabaseBrowserClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Supabase environment variables are not configured.");
-  }
-
-  return createClient(supabaseUrl, supabaseAnonKey);
-}
-
-function nullableValue(value: string) {
-  const trimmedValue = value.trim();
-  return trimmedValue.length ? trimmedValue : null;
-}
 
 function certificateToFormState(
   certificate: Certificate,
@@ -78,39 +72,7 @@ function certificateToFormState(
   };
 }
 
-function validateFile(file: File | null) {
-  if (!file) {
-    return "";
-  }
 
-  const lowerName = file.name.toLowerCase();
-  const hasAllowedExtension = allowedExtensions.some((extension) =>
-    lowerName.endsWith(extension),
-  );
-  const hasAllowedMimeType = allowedMimeTypes.includes(file.type);
-
-  if (!hasAllowedExtension && !hasAllowedMimeType) {
-    return "Only PDF, PNG, JPG, JPEG, and WEBP files are allowed.";
-  }
-
-  if (file.size > maxFileSize) {
-    return "File size must be 10MB or less.";
-  }
-
-  return "";
-}
-
-function createStoragePath(file: File) {
-  const extension = file.name.split(".").pop()?.toLowerCase() ?? "file";
-  const baseName =
-    file.name
-      .replace(/\.[^/.]+$/, "")
-      .replace(/[^a-zA-Z0-9-_]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 60) || "certificate";
-
-  return `uploads/${crypto.randomUUID()}-${baseName}.${extension}`;
-}
 
 export function CertificateForm({
   mode,
@@ -135,7 +97,7 @@ export function CertificateForm({
 
     async function loadCertificate() {
       try {
-        const supabase = createSupabaseBrowserClient();
+        const supabase = getSupabaseBrowserClient();
         const { data, error: loadError } = await supabase
           .from("certificates")
           .select("*")
@@ -157,11 +119,7 @@ export function CertificateForm({
           return;
         }
 
-        setError(
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Unable to load certificate.",
-        );
+        setError(getErrorMessage(caughtError, "Unable to load certificate."));
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -191,7 +149,16 @@ export function CertificateForm({
       return "Title is required.";
     }
 
-    return validateFile(selectedFile);
+    const urlError = getUrlFieldsError({
+      "Credential URL": formState.credential_url,
+      "Certificate URL": formState.certificate_url,
+    });
+
+    if (urlError) {
+      return urlError;
+    }
+
+    return validateUpload(selectedFile, uploadRules.certificate);
   }
 
   async function uploadCertificateFile() {
@@ -202,28 +169,12 @@ export function CertificateForm({
       };
     }
 
-    const supabase = createSupabaseBrowserClient();
-    const filePath = createStoragePath(selectedFile);
-    const { error: uploadError } = await supabase.storage
-      .from("certificates")
-      .upload(filePath, selectedFile, {
-        cacheControl: "3600",
-        contentType: selectedFile.type,
-        upsert: false,
-      });
+    const { path, publicUrl } = await uploadPublicFile(
+      selectedFile,
+      uploadRules.certificate,
+    );
 
-    if (uploadError) {
-      throw new Error(uploadError.message);
-    }
-
-    const { data } = supabase.storage
-      .from("certificates")
-      .getPublicUrl(filePath);
-
-    return {
-      certificateUrl: data.publicUrl,
-      filePath,
-    };
+    return { certificateUrl: publicUrl, filePath: path };
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -242,7 +193,7 @@ export function CertificateForm({
 
     try {
       const uploadedFile = await uploadCertificateFile();
-      const supabase = createSupabaseBrowserClient();
+      const supabase = getSupabaseBrowserClient();
       const payload = {
         title: formState.title.trim(),
         issuer: nullableValue(formState.issuer),
@@ -284,11 +235,7 @@ export function CertificateForm({
       router.push("/admin/certificates");
       router.refresh();
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to save certificate.",
-      );
+      setError(getErrorMessage(caughtError, "Unable to save certificate."));
     } finally {
       setIsSubmitting(false);
     }
@@ -360,54 +307,37 @@ export function CertificateForm({
           />
         </div>
 
-        <label className="block">
-          <span className="mb-2 block text-sm font-medium text-slate-200">
-            Certificate File
-          </span>
-          <input
-            type="file"
-            accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"
-            onChange={(event) => {
-              const file = event.target.files?.[0] ?? null;
-              const fileError = validateFile(file);
-              setSelectedFile(file);
-              setError(fileError);
-            }}
-            className="w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-slate-200 file:mr-4 file:rounded-md file:border-0 file:bg-cyan-300/15 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-cyan-100 hover:file:bg-cyan-300/25"
-          />
-          <p className="mt-2 text-xs text-slate-400">
-            PDF, PNG, JPG, JPEG, or WEBP. Max size 10MB.
-          </p>
+        <FileInput
+          label="Certificate File"
+          accept={acceptAttribute(uploadRules.certificate)}
+          hint="PDF, PNG, JPG, JPEG, or WEBP. Max size 10MB."
+          onFileChange={(file) => {
+            setSelectedFile(file);
+            setError(validateUpload(file, uploadRules.certificate));
+          }}
+        >
           {formState.file_path ? (
             <p className="mt-2 text-xs text-slate-400">
               Current storage path: {formState.file_path}
             </p>
           ) : null}
-        </label>
+        </FileInput>
 
-        {error ? (
-          <p className="rounded-md border border-rose-400/25 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">
-            {error}
-          </p>
-        ) : null}
+        <Notice tone="error" message={error} />
 
-        {success ? (
-          <p className="rounded-md border border-emerald-400/25 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-200">
-            {success}
-          </p>
-        ) : null}
+        <Notice tone="success" message={success} />
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Link
             href="/admin/certificates"
-            className="inline-flex items-center justify-center rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-slate-100 transition-colors duration-200 hover:bg-white/10"
+            className={secondaryButtonClassName}
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center rounded-md border border-cyan-300/20 bg-cyan-300/15 px-4 py-3 text-sm font-semibold text-cyan-100 transition-colors duration-200 hover:bg-cyan-300/25 disabled:cursor-not-allowed disabled:opacity-70"
+            className={primaryButtonClassName}
           >
             {isSubmitting
               ? "Saving..."
@@ -418,60 +348,5 @@ export function CertificateForm({
         </div>
       </form>
     </GlassCard>
-  );
-}
-
-function TextInput({
-  label,
-  value,
-  onChange,
-  type = "text",
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-  required?: boolean;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-medium text-slate-200">
-        {label}
-      </span>
-      <input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        required={required}
-        className="w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10"
-      />
-    </label>
-  );
-}
-
-function TextArea({
-  label,
-  value,
-  onChange,
-  rows = 3,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  rows?: number;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-medium text-slate-200">
-        {label}
-      </span>
-      <textarea
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        rows={rows}
-        className="w-full resize-y rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10"
-      />
-    </label>
   );
 }

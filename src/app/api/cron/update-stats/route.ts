@@ -1,41 +1,29 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { syncCodeforcesStats } from "@/lib/stats/codeforces";
-import { syncLeetCodeStats } from "@/lib/stats/leetcode";
+import { rateLimit } from "@/lib/rate-limit";
+import { runStatsSync } from "@/lib/stats/sync";
 
-type PlatformSyncResult =
-  | {
-      success: true;
-      platform: "codeforces" | "leetcode";
-      username: string;
-      solved_count: number;
-      last_updated: string;
-    }
-  | {
-      success: false;
-      platform: "codeforces" | "leetcode";
-      error: string;
-    };
+function secretsMatch(received: string, expected: string) {
+  // Hashing first gives equal-length buffers, so the comparison takes the same
+  // time no matter how much of the secret a guess gets right.
+  const digest = (value: string) => createHash("sha256").update(value).digest();
+  return timingSafeEqual(digest(received), digest(expected));
+}
 
 function getAuthorizationError(request: NextRequest) {
-  if (process.env.NODE_ENV === "development") {
-    return null;
-  }
-
   const cronSecret = process.env.CRON_SECRET;
 
   if (!cronSecret) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: "CRON_SECRET is not configured.",
-      },
-      { status: 500 },
-    );
+    console.error("CRON_SECRET is not configured; rejecting cron request.");
   }
 
-  const authorization = request.headers.get("authorization");
-
-  if (authorization !== `Bearer ${cronSecret}`) {
+  if (
+    !cronSecret ||
+    !secretsMatch(
+      request.headers.get("authorization") ?? "",
+      `Bearer ${cronSecret}`,
+    )
+  ) {
     return NextResponse.json(
       {
         success: false,
@@ -48,57 +36,29 @@ function getAuthorizationError(request: NextRequest) {
   return null;
 }
 
-function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Unknown sync error.";
-}
-
-async function runPlatformSyncs(): Promise<PlatformSyncResult[]> {
-  const [codeforces, leetcode] = await Promise.allSettled([
-    syncCodeforcesStats(),
-    syncLeetCodeStats(),
-  ]);
-
-  return [
-    codeforces.status === "fulfilled"
-      ? codeforces.value
-      : {
-          success: false,
-          platform: "codeforces",
-          error: errorMessage(codeforces.reason),
-        },
-    leetcode.status === "fulfilled"
-      ? leetcode.value
-      : {
-          success: false,
-          platform: "leetcode",
-          error: errorMessage(leetcode.reason),
-        },
-  ];
-}
-
 // Runs daily from Vercel Cron using the schedule in vercel.json.
-// Vercel triggers this route directly at /api/cron/update-stats.
-// Set CRON_SECRET in Vercel environment variables and send it as a Bearer token.
+// Vercel triggers this route directly at /api/cron/update-stats and sends
+// CRON_SECRET from the Vercel environment variables as a Bearer token.
 export async function GET(request: NextRequest) {
+  const rateLimitError = rateLimit(request, {
+    key: "cron-update-stats",
+    limit: 10,
+    windowMs: 60_000,
+  });
+
+  if (rateLimitError) {
+    return rateLimitError;
+  }
+
   const authorizationError = getAuthorizationError(request);
 
   if (authorizationError) {
     return authorizationError;
   }
 
-  const results = await runPlatformSyncs();
-  const successCount = results.filter((result) => result.success).length;
-  const hasPartialSuccess = successCount > 0 && successCount < results.length;
-  const allSucceeded = successCount === results.length;
+  const result = await runStatsSync("both");
 
-  return NextResponse.json(
-    {
-      success: allSucceeded,
-      partial_success: hasPartialSuccess,
-      results,
-    },
-    {
-      status: allSucceeded ? 200 : hasPartialSuccess ? 207 : 500,
-    },
-  );
+  return NextResponse.json(result, {
+    status: result.success ? 200 : result.partial_success ? 207 : 500,
+  });
 }

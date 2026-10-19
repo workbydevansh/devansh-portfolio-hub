@@ -1,7 +1,5 @@
 import { AchievementSection } from "@/components/achievements/AchievementSection";
 import type { AchievementWithDetails } from "@/components/achievements/AchievementSection";
-import { PublicFooter } from "@/components/layout/PublicFooter";
-import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { AnimatedPage } from "@/components/shared/AnimatedPage";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -95,19 +93,15 @@ export default async function AchievementsPage() {
   const achievements = await getAchievements();
 
   return (
-    <div className="gradient-aurora min-h-screen">
-      <PublicNavbar />
-      <AnimatedPage>
-        <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-          <SectionHeading
-            eyebrow="Achievements"
-            title="Achievement Timeline"
-            description="Grouped milestones with proof links, required references, and attached certificates."
-          />
-          <AchievementSection achievements={achievements} />
-        </main>
-      </AnimatedPage>
-      <PublicFooter />
-    </div>
+    <AnimatedPage>
+      <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+        <SectionHeading
+          eyebrow="Achievements"
+          title="Achievement Timeline"
+          description="Grouped milestones with proof links, required references, and attached certificates."
+        />
+        <AchievementSection achievements={achievements} />
+      </main>
+    </AnimatedPage>
   );
 }

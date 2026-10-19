@@ -2,7 +2,8 @@
 -- 1. Create one Supabase Auth user manually.
 -- 2. Insert that user's id/email into the profiles table with role admin.
 -- 3. Keep Supabase Auth signups disabled/invite-only if you want only one owner.
--- 4. This script creates public-read storage buckets and admin-only write policies.
+-- 4. This script creates public storage buckets: files open from their public URLs,
+--    but only the admin can list, upload, update, or delete them.
 
 create extension if not exists "pgcrypto";
 
@@ -10,7 +11,7 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id),
   email text unique not null,
   full_name text,
-  role text default 'admin',
+  role text not null default 'user' check (role in ('admin', 'user')),
   created_at timestamptz default now()
 );
 
@@ -161,8 +162,9 @@ execute function public.set_updated_at();
 create or replace function public.is_admin()
 returns boolean
 language sql
+stable
 security definer
-set search_path = public
+set search_path = ''
 as $$
   select exists (
     select 1
@@ -487,16 +489,18 @@ set
   allowed_mime_types = excluded.allowed_mime_types;
 
 drop policy if exists "Public can read portfolio storage objects" on storage.objects;
+drop policy if exists "Admins can read portfolio storage objects" on storage.objects;
 drop policy if exists "Admins can upload portfolio storage objects" on storage.objects;
 drop policy if exists "Admins can update portfolio storage objects" on storage.objects;
 drop policy if exists "Admins can delete portfolio storage objects" on storage.objects;
 
-create policy "Public can read portfolio storage objects"
+create policy "Admins can read portfolio storage objects"
 on storage.objects
 for select
-to anon, authenticated
+to authenticated
 using (
   bucket_id in ('certificates', 'project-images', 'resume', 'site-assets')
+  and public.is_admin()
 );
 
 create policy "Admins can upload portfolio storage objects"

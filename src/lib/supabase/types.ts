@@ -96,51 +96,9 @@ export type CodingStats = {
   updated_at: string | null;
 };
 
-export type PortfolioSetting = {
-  id: string;
-  key: string;
-  value: Json;
-  updated_at: string | null;
-};
+// Everything the stats pages display; raw_json (the sync's raw API payload)
+// is deliberately left out so it is never sent to the browser.
+export type CodingStatsSummary = Omit<CodingStats, "raw_json">;
 
-type Profile = {
-  id: string;
-  email: string;
-  full_name: string | null;
-  role: string | null;
-  created_at: string | null;
-};
-
-export type Database = {
-  public: {
-    Tables: {
-      profiles: {
-        Row: Profile;
-      };
-      projects: {
-        Row: Project;
-      };
-      certificates: {
-        Row: Certificate;
-      };
-      achievements: {
-        Row: Achievement;
-      };
-      achievement_links: {
-        Row: AchievementLink;
-      };
-      achievement_certificates: {
-        Row: AchievementCertificate;
-      };
-      social_links: {
-        Row: SocialLink;
-      };
-      coding_stats: {
-        Row: CodingStats;
-      };
-      portfolio_settings: {
-        Row: PortfolioSetting;
-      };
-    };
-  };
-};
+export const codingStatsSummaryColumns =
+  "id, platform, username, rating, max_rating, rank, max_rank, solved_count, easy_solved, medium_solved, hard_solved, contest_count, global_ranking, last_updated, created_at, updated_at";

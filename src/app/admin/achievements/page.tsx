@@ -1,13 +1,6 @@
-import { revalidatePath } from "next/cache";
+import { refreshAchievementPages } from "@/app/admin/actions";
 import Link from "next/link";
 import { AchievementTable } from "@/components/admin/achievements/AchievementTable";
-
-async function refreshAchievementPages() {
-  "use server";
-
-  revalidatePath("/achievements");
-  revalidatePath("/admin/achievements");
-}
 
 export default function AdminAchievementsPage() {
   return (

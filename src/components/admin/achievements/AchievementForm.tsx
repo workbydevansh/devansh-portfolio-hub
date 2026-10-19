@@ -1,15 +1,24 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import {
+  Notice,
+  TextArea,
+  TextInput,
+  primaryButtonClassName,
+  secondaryButtonClassName,
+} from "@/components/admin/FormFields";
 import { GlassCard } from "@/components/shared/GlassCard";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type {
   Achievement,
   AchievementCertificate,
   AchievementLink,
 } from "@/lib/supabase/types";
+import { getUrlFieldsError } from "@/lib/url";
+import { getErrorMessage, nullableValue } from "@/lib/utils";
 import {
   AchievementLinkInput,
   AchievementLinksEditor,
@@ -44,21 +53,7 @@ const initialFormState: AchievementFormState = {
   display_order: "0",
 };
 
-function createSupabaseBrowserClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Supabase environment variables are not configured.");
-  }
-
-  return createClient(supabaseUrl, supabaseAnonKey);
-}
-
-function nullableValue(value: string) {
-  const trimmedValue = value.trim();
-  return trimmedValue.length ? trimmedValue : null;
-}
 
 function achievementToFormState(
   achievement: Achievement,
@@ -118,7 +113,7 @@ export function AchievementForm({
 
     async function loadAchievement() {
       try {
-        const supabase = createSupabaseBrowserClient();
+        const supabase = getSupabaseBrowserClient();
         const [
           { data: achievement, error: achievementError },
           { data: achievementLinks, error: linksError },
@@ -166,11 +161,7 @@ export function AchievementForm({
           return;
         }
 
-        setError(
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Unable to load achievement.",
-        );
+        setError(getErrorMessage(caughtError, "Unable to load achievement."));
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -214,11 +205,16 @@ export function AchievementForm({
       return "Each achievement link needs both a label and URL.";
     }
 
-    return "";
+    return getUrlFieldsError({
+      "Proof URL": formState.proof_url,
+      ...Object.fromEntries(
+        links.map((link, index) => [`Link ${index + 1} URL`, link.url]),
+      ),
+    });
   }
 
   async function saveLinksAndCertificates(savedAchievementId: string) {
-    const supabase = createSupabaseBrowserClient();
+    const supabase = getSupabaseBrowserClient();
 
     if (mode === "edit") {
       const [{ error: deleteLinksError }, { error: deleteCertificatesError }] =
@@ -289,7 +285,7 @@ export function AchievementForm({
     setIsSubmitting(true);
 
     try {
-      const supabase = createSupabaseBrowserClient();
+      const supabase = getSupabaseBrowserClient();
       const payload = {
         title: formState.title.trim(),
         description: formState.description.trim(),
@@ -340,11 +336,7 @@ export function AchievementForm({
       router.push("/admin/achievements");
       router.refresh();
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to save achievement.",
-      );
+      setError(getErrorMessage(caughtError, "Unable to save achievement."));
     } finally {
       setIsSubmitting(false);
     }
@@ -421,29 +413,21 @@ export function AchievementForm({
           onChange={setSelectedCertificateIds}
         />
 
-        {error ? (
-          <p className="rounded-md border border-rose-400/25 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">
-            {error}
-          </p>
-        ) : null}
+        <Notice tone="error" message={error} />
 
-        {success ? (
-          <p className="rounded-md border border-emerald-400/25 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-200">
-            {success}
-          </p>
-        ) : null}
+        <Notice tone="success" message={success} />
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Link
             href="/admin/achievements"
-            className="inline-flex items-center justify-center rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-slate-100 transition-colors duration-200 hover:bg-white/10"
+            className={secondaryButtonClassName}
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center rounded-md border border-cyan-300/20 bg-cyan-300/15 px-4 py-3 text-sm font-semibold text-cyan-100 transition-colors duration-200 hover:bg-cyan-300/25 disabled:cursor-not-allowed disabled:opacity-70"
+            className={primaryButtonClassName}
           >
             {isSubmitting
               ? "Saving..."
@@ -454,63 +438,5 @@ export function AchievementForm({
         </div>
       </form>
     </GlassCard>
-  );
-}
-
-function TextInput({
-  label,
-  value,
-  onChange,
-  type = "text",
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-  required?: boolean;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-medium text-slate-200">
-        {label}
-      </span>
-      <input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        required={required}
-        className="w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10"
-      />
-    </label>
-  );
-}
-
-function TextArea({
-  label,
-  value,
-  onChange,
-  rows = 3,
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  rows?: number;
-  required?: boolean;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-medium text-slate-200">
-        {label}
-      </span>
-      <textarea
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        rows={rows}
-        required={required}
-        className="w-full resize-y rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10"
-      />
-    </label>
   );
 }

@@ -1,80 +1,36 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import { Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { Notice } from "@/components/admin/FormFields";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Certificate } from "@/lib/supabase/types";
+import { useSupabaseQuery } from "@/lib/supabase/useSupabaseQuery";
 
 type CertificateAttachSelectorProps = {
   selectedCertificateIds: string[];
   onChange: (certificateIds: string[]) => void;
 };
 
-function createSupabaseBrowserClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Supabase environment variables are not configured.");
-  }
-
-  return createClient(supabaseUrl, supabaseAnonKey);
-}
-
 export function CertificateAttachSelector({
   selectedCertificateIds,
   onChange,
 }: CertificateAttachSelectorProps) {
-  const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadCertificates() {
-      try {
-        const supabase = createSupabaseBrowserClient();
-        const { data, error: loadError } = await supabase
-          .from("certificates")
-          .select("*")
-          .order("issue_date", { ascending: false })
-          .order("created_at", { ascending: false });
-
-        if (!isMounted) {
-          return;
-        }
-
-        if (loadError) {
-          setError(loadError.message);
-          return;
-        }
-
-        setCertificates((data ?? []) as Certificate[]);
-      } catch (caughtError) {
-        if (!isMounted) {
-          return;
-        }
-
-        setError(
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Unable to load certificates.",
-        );
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadCertificates();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const {
+    data: certificates,
+    error,
+    isLoading,
+  } = useSupabaseQuery(
+    () =>
+      getSupabaseBrowserClient()
+        .from("certificates")
+        .select("*")
+        .order("issue_date", { ascending: false })
+        .order("created_at", { ascending: false }),
+    [] as Certificate[],
+    "Unable to load certificates.",
+  );
 
   const filteredCertificates = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -127,11 +83,7 @@ export function CertificateAttachSelector({
         />
       </label>
 
-      {error ? (
-        <p className="rounded-md border border-rose-400/25 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">
-          {error}
-        </p>
-      ) : null}
+      <Notice tone="error" message={error} />
 
       {isLoading ? (
         <p className="rounded-md border border-white/10 bg-white/[0.04] p-3 text-sm text-slate-300">

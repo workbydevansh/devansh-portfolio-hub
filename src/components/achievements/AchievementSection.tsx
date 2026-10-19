@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { GlassCard } from "@/components/shared/GlassCard";
 import type {
   Achievement,
@@ -20,56 +19,30 @@ type AchievementSectionProps = {
   achievements: AchievementWithDetails[];
 };
 
-const categoryOrder = [
-  "Hackathons",
-  "Competitive Programming",
-  "Projects",
-  "Academics",
-  "Certifications",
-  "Other",
-] as const;
+// Display order of the groups, and the stored category values each covers.
+const categoryGroups = {
+  Hackathons: ["hackathon", "hackathons"],
+  "Competitive Programming": ["competitive programming", "cp", "codeforces", "leetcode"],
+  Projects: ["project", "projects"],
+  Academics: ["academic", "academics"],
+  Certifications: ["certification", "certifications", "certificate", "certificates"],
+  Other: [],
+} satisfies Record<string, string[]>;
 
-function normalizeCategory(category: string | null) {
-  const value = category?.trim().toLowerCase();
+function groupFor(category: string | null) {
+  const value = category?.trim().toLowerCase() ?? "";
+  const match = Object.entries(categoryGroups).find(([, values]) =>
+    (values as string[]).includes(value),
+  );
 
-  if (value === "hackathon" || value === "hackathons") {
-    return "Hackathons";
-  }
-
-  if (
-    value === "competitive programming" ||
-    value === "cp" ||
-    value === "codeforces" ||
-    value === "leetcode"
-  ) {
-    return "Competitive Programming";
-  }
-
-  if (value === "project" || value === "projects") {
-    return "Projects";
-  }
-
-  if (value === "academic" || value === "academics") {
-    return "Academics";
-  }
-
-  if (
-    value === "certification" ||
-    value === "certifications" ||
-    value === "certificate" ||
-    value === "certificates"
-  ) {
-    return "Certifications";
-  }
-
-  return "Other";
+  return match?.[0] ?? "Other";
 }
 
 export function AchievementSection({ achievements }: AchievementSectionProps) {
-  const groupedAchievements = categoryOrder.map((category) => ({
+  const groupedAchievements = Object.keys(categoryGroups).map((category) => ({
     category,
     achievements: achievements.filter(
-      (achievement) => normalizeCategory(achievement.category) === category,
+      (achievement) => groupFor(achievement.category) === category,
     ),
   }));
 
@@ -87,14 +60,7 @@ export function AchievementSection({ achievements }: AchievementSectionProps) {
     <div className="mt-10 space-y-8">
       {groupedAchievements.map((group) =>
         group.achievements.length ? (
-          <motion.section
-            key={group.category}
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.42, ease: "easeOut" }}
-            className="relative"
-          >
+          <section key={group.category} className="scroll-reveal relative">
             <div className="mb-4 flex items-center gap-3">
               <span className="h-px flex-1 bg-white/10" />
               <h2 className="text-lg font-semibold text-white">
@@ -110,7 +76,7 @@ export function AchievementSection({ achievements }: AchievementSectionProps) {
                 />
               ))}
             </div>
-          </motion.section>
+          </section>
         ) : null,
       )}
     </div>

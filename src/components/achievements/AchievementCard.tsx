@@ -14,50 +14,43 @@ import {
 import { useState } from "react";
 import { GlassCard } from "@/components/shared/GlassCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { cn } from "@/lib/utils";
+import { expandTransition } from "@/lib/motion";
+import { safeUrl } from "@/lib/url";
+import { cn, formatDate } from "@/lib/utils";
 import type { AchievementWithDetails } from "./AchievementSection";
 
 type AchievementCardProps = {
   achievement: AchievementWithDetails;
 };
 
-function formatDate(date: string | null) {
-  if (!date) {
-    return "Date not added";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(date));
-}
 
 function certificateHref(certificate: AchievementWithDetails["certificates"][number]) {
   return (
-    certificate.certificate_url ??
-    certificate.credential_url ??
-    certificate.file_path
+    safeUrl(certificate.certificate_url) ??
+    safeUrl(certificate.credential_url) ??
+    safeUrl(certificate.file_path)
   );
 }
 
 export function AchievementCard({ achievement }: AchievementCardProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const proofUrl = safeUrl(achievement.proof_url);
+  const links = achievement.links.flatMap((link) => {
+    const url = safeUrl(link.url);
+    return url ? [{ ...link, url }] : [];
+  });
   const hasExpandedContent =
-    achievement.proof_url ||
-    achievement.links.length > 0 ||
-    achievement.certificates.length > 0;
+    proofUrl || links.length > 0 || achievement.certificates.length > 0;
 
   return (
-    <motion.article whileHover={{ scale: 1.01 }} transition={{ duration: 0.2 }}>
-      <GlassCard className="h-full overflow-hidden p-5">
+    <article className="h-full">
+      <GlassCard className="glass-card-interactive h-full overflow-hidden p-5">
         <div className="flex h-full flex-col">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <StatusBadge label={achievement.category ?? "Other"} variant="info" />
             <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-medium text-slate-200">
               <CalendarDays size={13} />
-              {formatDate(achievement.achievement_date)}
+              {formatDate(achievement.achievement_date, "Date not added")}
             </span>
           </div>
 
@@ -94,7 +87,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
           <div className="mt-auto pt-6">
             <button
               type="button"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:border-cyan-300/40 hover:bg-cyan-300/15 hover:text-cyan-100"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-[color,background-color,border-color,scale] duration-200 ease-out hover:border-cyan-300/40 hover:bg-cyan-300/15 hover:text-cyan-100 active:scale-[0.96]"
               aria-expanded={isOpen}
               onClick={() => setIsOpen((current) => !current)}
             >
@@ -102,7 +95,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
               <ChevronDown
                 size={16}
                 className={cn(
-                  "transition-transform duration-200",
+                  "transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
                   isOpen ? "rotate-180" : "rotate-0",
                 )}
               />
@@ -115,7 +108,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.24, ease: "easeOut" }}
+                transition={expandTransition}
                 className="overflow-hidden"
               >
                 <div className="mt-5 space-y-5 border-t border-white/10 pt-5">
@@ -126,25 +119,25 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
                     </div>
                     {hasExpandedContent ? (
                       <div className="flex flex-wrap gap-3">
-                        {achievement.proof_url ? (
+                        {proofUrl ? (
                           <a
-                            href={achievement.proof_url}
+                            href={proofUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-sm font-semibold text-cyan-100 transition-colors duration-200 hover:bg-cyan-300/20"
+                            className="group inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-sm font-semibold text-cyan-100 transition-[background-color,scale] duration-200 ease-out hover:bg-cyan-300/20 active:scale-[0.96]"
                           >
                             Proof
-                            <ArrowUpRight size={14} />
+                            <ArrowUpRight size={14} className="transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                           </a>
                         ) : null}
 
-                        {achievement.links.map((link) => (
+                        {links.map((link) => (
                           <a
                             key={link.id}
                             href={link.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-semibold text-slate-100 transition-colors duration-200 hover:bg-white/10"
+                            className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-semibold text-slate-100 transition-[background-color,scale] duration-200 ease-out hover:bg-white/10 active:scale-[0.96]"
                           >
                             <Link2 size={14} />
                             {link.label}
@@ -184,10 +177,10 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
                                   href={href}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="mt-3 inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-sm font-semibold text-cyan-100 transition-colors duration-200 hover:bg-cyan-300/20"
+                                  className="group mt-3 inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-sm font-semibold text-cyan-100 transition-[background-color,scale] duration-200 ease-out hover:bg-cyan-300/20 active:scale-[0.96]"
                                 >
                                   View Certificate
-                                  <ArrowUpRight size={14} />
+                                  <ArrowUpRight size={14} className="transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                                 </a>
                               ) : (
                                 <span className="mt-3 inline-flex items-center rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-slate-400">
@@ -206,6 +199,6 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
           </AnimatePresence>
         </div>
       </GlassCard>
-    </motion.article>
+    </article>
   );
 }

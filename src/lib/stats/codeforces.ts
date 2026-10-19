@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createServiceRoleSupabaseClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/supabase/types";
 
 type CodeforcesApiResponse<T> =
@@ -96,42 +96,17 @@ function getProblemKey(problem: CodeforcesProblem) {
   }`;
 }
 
-function getSolvedProblems(submissions: CodeforcesSubmission[]) {
-  const solvedProblems = new Map<string, CodeforcesProblem>();
-
-  for (const submission of submissions) {
-    if (submission.verdict !== "OK") {
-      continue;
-    }
-
-    solvedProblems.set(getProblemKey(submission.problem), submission.problem);
-  }
-
-  return Array.from(solvedProblems.values());
+function countSolvedProblems(submissions: CodeforcesSubmission[]) {
+  return new Set(
+    submissions
+      .filter((submission) => submission.verdict === "OK")
+      .map((submission) => getProblemKey(submission.problem)),
+  ).size;
 }
 
-function createServiceRoleSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl) {
-    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL");
-  }
-
-  if (!serviceRoleKey) {
-    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
-  }
-
-  return createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-}
 
 export async function syncCodeforcesStats(): Promise<SyncCodeforcesResult> {
-  const handle = process.env.CODEFORCES_HANDLE || "boyzzz";
+  const handle = process.env.CODEFORCES_HANDLE?.trim() || "boyzzz";
 
   const [users, ratingChanges, submissions] = await Promise.all([
     fetchCodeforces<CodeforcesUser[]>("user.info", { handles: handle }),
@@ -145,13 +120,11 @@ export async function syncCodeforcesStats(): Promise<SyncCodeforcesResult> {
     throw new Error(`Codeforces user not found: ${handle}`);
   }
 
-  const solvedProblems = getSolvedProblems(submissions);
+  const solvedCount = countSolvedProblems(submissions);
   const lastUpdated = new Date().toISOString();
   const rawJson: Json = {
     user_info: user as Json,
     rating_changes: ratingChanges as Json,
-    submissions: submissions as Json,
-    solved_problems: solvedProblems as Json,
     synced_at: lastUpdated,
   };
 
@@ -164,7 +137,7 @@ export async function syncCodeforcesStats(): Promise<SyncCodeforcesResult> {
       max_rating: user.maxRating ?? null,
       rank: user.rank ?? null,
       max_rank: user.maxRank ?? null,
-      solved_count: solvedProblems.length,
+      solved_count: solvedCount,
       contest_count: ratingChanges.length,
       last_updated: lastUpdated,
       raw_json: rawJson,
@@ -180,7 +153,7 @@ export async function syncCodeforcesStats(): Promise<SyncCodeforcesResult> {
     success: true,
     platform: "codeforces",
     username: user.handle,
-    solved_count: solvedProblems.length,
+    solved_count: solvedCount,
     last_updated: lastUpdated,
   };
 }

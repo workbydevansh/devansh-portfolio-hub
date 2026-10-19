@@ -22,7 +22,6 @@ Devansh Portfolio Hub is a Next.js portfolio dashboard for projects, achievement
 - Supabase Auth, Database, and Storage
 - Framer Motion
 - Lucide React
-- Recharts
 
 ## Access Model
 
@@ -46,6 +45,10 @@ Owner login
   -> profiles.role = admin
   -> Admin CRUD + Storage uploads
 ```
+
+## Data Model
+
+Public tables: `projects`, `achievements`, `achievement_links`, `achievement_certificates`, `certificates`, `social_links`, `coding_stats`, `portfolio_settings`. Owner table: `profiles` (only rows with `role = 'admin'` can write). Storage buckets: `project-images`, `certificates`, `resume`, `site-assets`. `supabase/schema.sql` creates all of it, including the security policies.
 
 ## Setup
 
