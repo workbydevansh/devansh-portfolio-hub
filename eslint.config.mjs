@@ -10,6 +10,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored third-party source (Bklit UI charts, Kokonut UI), kept as
+    // upstream ships it so future updates stay a clean copy.
+    "src/components/charts/**",
+    "src/components/kokonutui/**",
   ]),
 ]);
 

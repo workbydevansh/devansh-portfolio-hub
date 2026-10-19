@@ -13,7 +13,6 @@ import {
 import Link from "next/link";
 import type { ComponentType, CSSProperties } from "react";
 import { useEffect, useState } from "react";
-import { DVLogo } from "@/components/shared/DVLogo";
 import { GlassCard } from "@/components/shared/GlassCard";
 import {
   getSupabaseBrowserClient,
@@ -161,55 +160,53 @@ export default function Home() {
   }, []);
 
   return (
-    <main id="dashboard" className="mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8">
+    <main id="dashboard">
       <HeroSection />
-      <CommandCenter />
-      <PreviewSection preview={preview} isLoading={isLoading} />
+      <div className="mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8">
+        <CommandCenter />
+        <PreviewSection preview={preview} isLoading={isLoading} />
+      </div>
     </main>
   );
 }
 
 function HeroSection() {
   return (
-    <section className="flex min-h-[calc(100svh-75px)] items-center py-16 sm:py-20">
-      <GlassCard className="w-full overflow-hidden p-6 sm:p-10 lg:p-12">
-        <div className="max-w-3xl">
-          <div className="reveal" style={revealDelay(0)}>
-            <DVLogo className="mb-6 h-14 w-14 text-base" />
-          </div>
-          <p
-            className="reveal mb-4 inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm font-medium text-cyan-200"
-            style={revealDelay(80)}
-          >
-            <Sparkles size={15} />
-            Portfolio
-          </p>
-          <h1
-            className="hero-name gradient-text w-fit text-5xl font-semibold text-white sm:text-6xl lg:text-7xl"
-            style={revealDelay(160)}
-          >
-            Devansh Verma
-          </h1>
-          <p
-            className="reveal mt-5 text-lg font-medium text-slate-100 sm:text-xl"
-            style={revealDelay(520)}
-          >
-            Computer Science Student | Competitive Programmer | AI/ML & Deep Learning Enthusiast
-          </p>
-          <p
-            className="reveal mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg"
-            style={revealDelay(600)}
-          >
-            A living portfolio of my projects, achievements, certificates, and
-            competitive programming journey.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <HeroButton href="/projects" label="View Projects" delay={680} />
-            <HeroButton href="/achievements" label="View Achievements" delay={740} />
-            <HeroButton href="/cp-stats" label="CP Stats" delay={800} />
-          </div>
-        </div>
-      </GlassCard>
+    <section className="flex min-h-[calc(100svh-73px)] flex-col items-center justify-center px-6 py-20 text-center">
+      <span
+        className="reveal mb-6 inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm font-medium text-cyan-200"
+        style={revealDelay(0)}
+      >
+        <Sparkles size={15} />
+        Portfolio
+      </span>
+      <h1 className="font-semibold tracking-tight">
+        <span
+          className="hero-name gradient-text inline-block pb-2 text-5xl sm:text-7xl"
+          style={revealDelay(120)}
+        >
+          Devansh Verma
+        </span>
+      </h1>
+      <p
+        className="reveal mt-5 max-w-xl text-lg font-medium text-zinc-100 sm:text-xl"
+        style={revealDelay(480)}
+      >
+        Computer Science Student | Competitive Programmer | AI/ML & Deep
+        Learning Enthusiast
+      </p>
+      <p
+        className="reveal mt-4 max-w-xl text-base leading-7 text-zinc-400 sm:text-lg"
+        style={revealDelay(560)}
+      >
+        A living portfolio of my projects, achievements, certificates, and
+        competitive programming journey.
+      </p>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <HeroButton href="/projects" label="View Projects" delay={640} />
+        <HeroButton href="/achievements" label="View Achievements" delay={700} />
+        <HeroButton href="/cp-stats" label="CP Stats" delay={760} />
+      </div>
     </section>
   );
 }
@@ -226,7 +223,7 @@ function HeroButton({
   return (
     <Link
       href={href}
-      className="reveal group inline-flex items-center justify-center gap-2 rounded-md border border-white/10 bg-white/10 py-3 pl-5 pr-[18px] text-sm font-semibold text-white transition-[color,background-color,border-color,scale] duration-200 ease-out hover:border-cyan-300/40 hover:bg-cyan-300/15 hover:text-cyan-100 active:scale-[0.96]"
+      className="reveal group inline-flex items-center justify-center gap-2 rounded-md border border-white/10 bg-zinc-900 py-3 pl-5 pr-[18px] text-sm font-semibold text-white transition-[color,background-color,border-color,scale] duration-200 ease-out hover:border-cyan-300/40 hover:bg-zinc-800 hover:text-cyan-100 active:scale-[0.96]"
       style={revealDelay(delay)}
     >
       {label}
@@ -280,7 +277,7 @@ function BentoCard({ card }: { card: BentoCard }) {
               <Icon size={21} />
             </div>
             <h3 className="text-xl font-semibold text-white">{card.title}</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-300">{card.text}</p>
+            <p className="mt-3 text-sm leading-6 text-zinc-300">{card.text}</p>
           </div>
           {card.external ? (
             <a
@@ -395,14 +392,14 @@ function PreviewCard<T>({
               className="rounded-lg border border-white/10 bg-white/[0.04] p-4"
             >
               <p className="font-medium text-white">{getTitle(item)}</p>
-              <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-300">
+              <p className="mt-2 line-clamp-2 text-sm leading-6 text-zinc-300">
                 {getText(item)}
               </p>
             </div>
           ))}
         </div>
       ) : (
-        <p className="fade-in rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
+        <p className="fade-in rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-zinc-300">
           No records added yet.
         </p>
       )}

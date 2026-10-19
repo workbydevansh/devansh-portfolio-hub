@@ -2,11 +2,11 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 const fieldClassName =
-  "w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10";
+  "w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-zinc-500 focus:border-cyan-300/40 focus:bg-white/10";
 
 function FieldLabel({ children }: { children: ReactNode }) {
   return (
-    <span className="mb-2 block text-sm font-medium text-slate-200">
+    <span className="mb-2 block text-sm font-medium text-zinc-200">
       {children}
     </span>
   );
@@ -89,9 +89,9 @@ export function FileInput({
         type="file"
         accept={accept}
         onChange={(event) => onFileChange(event.target.files?.[0] ?? null)}
-        className="w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-slate-200 file:mr-4 file:rounded-md file:border-0 file:bg-cyan-300/15 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-cyan-100 hover:file:bg-cyan-300/25"
+        className="w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-zinc-200 file:mr-4 file:rounded-md file:border-0 file:bg-cyan-300/15 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-cyan-100 hover:file:bg-cyan-300/25"
       />
-      <p className="mt-2 text-xs text-slate-400">{hint}</p>
+      <p className="mt-2 text-xs text-zinc-400">{hint}</p>
       {children}
     </label>
   );
@@ -131,4 +131,4 @@ export const primaryButtonClassName =
   "inline-flex items-center justify-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/15 px-4 py-3 text-sm font-semibold text-cyan-100 transition-colors duration-200 hover:bg-cyan-300/25 disabled:cursor-not-allowed disabled:opacity-70";
 
 export const secondaryButtonClassName =
-  "inline-flex items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-slate-100 transition-colors duration-200 hover:bg-white/10";
+  "inline-flex items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-zinc-100 transition-colors duration-200 hover:bg-white/10";

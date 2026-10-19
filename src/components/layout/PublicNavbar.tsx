@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -60,7 +60,7 @@ export function PublicNavbar() {
                 "relative rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200",
                 isActive(link.href)
                   ? "text-cyan-100"
-                  : "text-slate-300 hover:text-white",
+                  : "text-zinc-300 hover:text-white",
               )}
             >
               {highlightedHref === link.href ? (
@@ -83,7 +83,7 @@ export function PublicNavbar() {
 
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/10 bg-white/5 text-slate-100 transition-[background-color,scale] duration-200 ease-out hover:bg-white/10 active:scale-[0.96] md:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/10 bg-white/5 text-zinc-100 transition-[background-color,scale] duration-200 ease-out hover:bg-white/10 active:scale-[0.96] md:hidden"
           aria-label={isOpen ? "Close navigation" : "Open navigation"}
           aria-expanded={isOpen}
           aria-controls="mobile-navigation"
@@ -125,7 +125,7 @@ export function PublicNavbar() {
                   "rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-200",
                   isActive(link.href)
                     ? "bg-cyan-300/15 text-cyan-100 ring-1 ring-cyan-300/20"
-                    : "text-slate-300 hover:bg-white/10 hover:text-white",
+                    : "text-zinc-300 hover:bg-white/10 hover:text-white",
                 )}
                 onClick={() => setIsOpen(false)}
               >

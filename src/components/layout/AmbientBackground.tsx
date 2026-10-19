@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import DrapeBackground from "@/components/kokonutui/drape-background";
 
-// One pointer listener drives both the background spotlight and the light that
-// follows the cursor across glass cards. Work is batched to one update per
-// frame and written straight to transforms and CSS variables, so React never
-// re-renders while the pointer moves.
+// Site background: Kokonut UI's Drape (a WebGL cloth in a light breeze) in its
+// dark variant. It sits behind every public page, so content would swallow
+// the pointer; one document listener forwards mouse movement to the cloth
+// (push only, no grabbing, so clicks and text selection stay untouched) and
+// also drives the light that follows the cursor across glass cards. Work is
+// batched to one update per frame and never re-renders React.
 export function AmbientBackground() {
-  const spotlightRef = useRef<HTMLDivElement>(null);
+  const drapeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     if (!finePointer.matches) {
       return;
@@ -19,6 +21,7 @@ export function AmbientBackground() {
 
     let frame = 0;
     let lastEvent: PointerEvent | null = null;
+    const drape = () => drapeRef.current?.firstElementChild ?? null;
 
     function update() {
       frame = 0;
@@ -28,12 +31,10 @@ export function AmbientBackground() {
       }
 
       const { clientX, clientY, target } = lastEvent;
-      const spotlight = spotlightRef.current;
 
-      if (spotlight && !reducedMotion.matches) {
-        spotlight.style.transform = `translate3d(${clientX}px, ${clientY}px, 0)`;
-        spotlight.dataset.active = "true";
-      }
+      drape()?.dispatchEvent(
+        new PointerEvent("pointermove", { clientX, clientY, pointerType: "mouse" }),
+      );
 
       let card =
         target instanceof Element
@@ -62,8 +63,8 @@ export function AmbientBackground() {
     }
 
     function handlePointerOut(event: PointerEvent) {
-      if (!event.relatedTarget && spotlightRef.current) {
-        spotlightRef.current.dataset.active = "false";
+      if (!event.relatedTarget) {
+        drape()?.dispatchEvent(new PointerEvent("pointerleave"));
       }
     }
 
@@ -78,12 +79,10 @@ export function AmbientBackground() {
   }, []);
 
   return (
-    <div aria-hidden="true" className="ambient">
-      <div className="ambient-blob ambient-blob-teal" />
-      <div className="ambient-blob ambient-blob-indigo" />
-      <div className="ambient-blob ambient-blob-cyan" />
-      <div className="ambient-grid" />
-      <div ref={spotlightRef} className="ambient-spotlight" />
+    <div aria-hidden="true" className="ambient" ref={drapeRef}>
+      <DrapeBackground className="absolute inset-0 h-full min-h-0">
+        {null}
+      </DrapeBackground>
       <div className="ambient-grain" />
     </div>
   );

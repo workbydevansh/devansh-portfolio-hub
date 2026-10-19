@@ -246,7 +246,7 @@ export function ProjectForm({ mode, projectId }: ProjectFormProps) {
   if (isLoading) {
     return (
       <GlassCard className="p-6 text-center">
-        <p className="text-sm text-slate-300">Loading project...</p>
+        <p className="text-sm text-zinc-300">Loading project...</p>
       </GlassCard>
     );
   }
@@ -341,9 +341,9 @@ export function ProjectForm({ mode, projectId }: ProjectFormProps) {
               type="checkbox"
               checked={formState.featured}
               onChange={(event) => updateField("featured", event.target.checked)}
-              className="h-4 w-4 rounded border-white/20 bg-slate-950"
+              className="h-4 w-4 rounded border-white/20 bg-zinc-950"
             />
-            <span className="text-sm font-medium text-slate-200">Featured</span>
+            <span className="text-sm font-medium text-zinc-200">Featured</span>
           </label>
         </div>
 

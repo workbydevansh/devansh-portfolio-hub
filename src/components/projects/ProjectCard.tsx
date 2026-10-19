@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { ArrowUpRight, ChevronDown, Star } from "lucide-react";
 import { useState } from "react";
 import { GlassCard } from "@/components/shared/GlassCard";
@@ -40,7 +40,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
           <div className="mt-5">
             <h2 className="text-2xl font-semibold text-white">{project.title}</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-300">
+            <p className="mt-3 text-sm leading-6 text-zinc-300">
               {project.short_description}
             </p>
           </div>
@@ -50,7 +50,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               {project.tech_stack.map((tech) => (
                 <span
                   key={tech}
-                  className="rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-medium text-slate-200"
+                  className="rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-medium text-zinc-200"
                 >
                   {tech}
                 </span>
@@ -96,7 +96,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                   ) : null}
 
                   {project.long_description ? (
-                    <p className="text-sm leading-6 text-slate-300">
+                    <p className="text-sm leading-6 text-zinc-300">
                       {project.long_description}
                     </p>
                   ) : null}

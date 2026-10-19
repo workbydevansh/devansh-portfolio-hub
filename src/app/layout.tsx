@@ -17,7 +17,14 @@ export const metadata: Metadata = {
     default: "Devansh Portfolio Hub",
     template: "%s | Devansh Portfolio Hub",
   },
-  description: "Dynamic portfolio system coming next",
+  description:
+    "Devansh Verma: Computer Science student, competitive programmer, and AI/ML & deep learning enthusiast. Projects, achievements, certificates, and Codeforces and LeetCode progress.",
+  openGraph: {
+    title: "Devansh Verma | Portfolio",
+    description:
+      "Projects, achievements, certificates, and competitive programming progress.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -26,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>

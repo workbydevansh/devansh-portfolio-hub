@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { Search } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -66,14 +66,14 @@ export function FilteredCardGrid<T extends { id: string }>({
             <span className="sr-only">Search {noun}</span>
             <Search
               size={17}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
             />
             <input
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full rounded-md border border-white/10 bg-white/[0.05] py-2.5 pl-10 pr-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10"
+              className="w-full rounded-md border border-white/10 bg-white/[0.05] py-2.5 pl-10 pr-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-zinc-500 focus:border-cyan-300/40 focus:bg-white/10"
             />
           </label>
         </div>
@@ -96,7 +96,7 @@ export function FilteredCardGrid<T extends { id: string }>({
         </div>
       ) : (
         <GlassCard className="fade-in mt-6 p-8 text-center sm:p-10">
-          <p className="text-sm leading-6 text-slate-300">
+          <p className="text-sm leading-6 text-zinc-300">
             {items.length
               ? `No ${noun} match this filter.`
               : `No ${noun} added yet.`}

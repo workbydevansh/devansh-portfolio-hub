@@ -49,7 +49,7 @@ export function AchievementSection({ achievements }: AchievementSectionProps) {
   if (!achievements.length) {
     return (
       <GlassCard className="mt-10 p-8 text-center sm:p-10">
-        <p className="text-sm leading-6 text-slate-300">
+        <p className="text-sm leading-6 text-zinc-300">
           No achievements added yet.
         </p>
       </GlassCard>

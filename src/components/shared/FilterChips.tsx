@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useId } from "react";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +34,7 @@ export function FilterChips<T extends string>({
               "relative rounded-md border px-3 py-2 text-sm font-medium transition-[color,background-color,border-color,scale] duration-200 ease-out active:scale-[0.96]",
               isActive
                 ? "border-transparent text-cyan-100"
-                : "border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/10 hover:text-white",
+                : "border-white/10 bg-white/[0.04] text-zinc-300 hover:bg-white/10 hover:text-white",
             )}
             onClick={() => onChange(option)}
           >

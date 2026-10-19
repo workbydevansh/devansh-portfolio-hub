@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpRight,
   Braces,
@@ -187,14 +187,14 @@ export default function ContactPage() {
                           />
                         </a>
                       ) : (
-                        <p className="text-sm text-slate-400">Not added</p>
+                        <p className="text-sm text-zinc-400">Not added</p>
                       )}
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <p className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
+              <p className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-zinc-300">
                 No contact links added yet.
               </p>
             )}
@@ -209,7 +209,7 @@ export default function ContactPage() {
                 Share this portfolio
               </h2>
             </div>
-            <p className="text-sm leading-6 text-slate-300">
+            <p className="text-sm leading-6 text-zinc-300">
               Copy the current website URL and share the portfolio directly.
             </p>
             <button

@@ -63,7 +63,7 @@ export function CertificateAttachSelector({
         <h2 className="text-lg font-semibold text-white">
           Attached Certificates
         </h2>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-zinc-400">
           Select certificates connected to this achievement.
         </p>
       </div>
@@ -72,21 +72,21 @@ export function CertificateAttachSelector({
         <span className="sr-only">Search certificates</span>
         <Search
           size={17}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
         />
         <input
           type="search"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search certificates"
-          className="w-full rounded-md border border-white/10 bg-white/[0.05] py-2.5 pl-10 pr-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10"
+          className="w-full rounded-md border border-white/10 bg-white/[0.05] py-2.5 pl-10 pr-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-zinc-500 focus:border-cyan-300/40 focus:bg-white/10"
         />
       </label>
 
       <Notice tone="error" message={error} />
 
       {isLoading ? (
-        <p className="rounded-md border border-white/10 bg-white/[0.04] p-3 text-sm text-slate-300">
+        <p className="rounded-md border border-white/10 bg-white/[0.04] p-3 text-sm text-zinc-300">
           Loading certificates...
         </p>
       ) : filteredCertificates.length ? (
@@ -100,13 +100,13 @@ export function CertificateAttachSelector({
                 type="checkbox"
                 checked={selectedCertificateIds.includes(certificate.id)}
                 onChange={() => toggleCertificate(certificate.id)}
-                className="mt-1 h-4 w-4 rounded border-white/20 bg-slate-950"
+                className="mt-1 h-4 w-4 rounded border-white/20 bg-zinc-950"
               />
               <span>
                 <span className="block text-sm font-semibold text-white">
                   {certificate.title}
                 </span>
-                <span className="mt-1 block text-xs text-slate-400">
+                <span className="mt-1 block text-xs text-zinc-400">
                   {certificate.issuer ?? "Issuer not added"}
                 </span>
               </span>
@@ -114,7 +114,7 @@ export function CertificateAttachSelector({
           ))}
         </div>
       ) : (
-        <p className="rounded-md border border-white/10 bg-white/[0.04] p-3 text-sm text-slate-300">
+        <p className="rounded-md border border-white/10 bg-white/[0.04] p-3 text-sm text-zinc-300">
           No certificates available.
         </p>
       )}

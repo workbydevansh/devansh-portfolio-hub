@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpRight,
   Building2,
@@ -48,7 +48,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
         <div className="flex h-full flex-col">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <StatusBadge label={achievement.category ?? "Other"} variant="info" />
-            <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-medium text-slate-200">
+            <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-medium text-zinc-200">
               <CalendarDays size={13} />
               {formatDate(achievement.achievement_date, "Date not added")}
             </span>
@@ -58,14 +58,14 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
             <h2 className="text-2xl font-semibold text-white">
               {achievement.title}
             </h2>
-            <p className="mt-3 text-sm leading-6 text-slate-300">
+            <p className="mt-3 text-sm leading-6 text-zinc-300">
               {achievement.description}
             </p>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-              <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-400">
+              <div className="mb-2 flex items-center gap-2 text-xs font-medium text-zinc-400">
                 <Building2 size={14} />
                 Organization
               </div>
@@ -74,7 +74,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
               </p>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-              <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-400">
+              <div className="mb-2 flex items-center gap-2 text-xs font-medium text-zinc-400">
                 <Medal size={14} />
                 Rank / Result
               </div>
@@ -137,7 +137,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
                             href={link.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-semibold text-slate-100 transition-[background-color,scale] duration-200 ease-out hover:bg-white/10 active:scale-[0.96]"
+                            className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-semibold text-zinc-100 transition-[background-color,scale] duration-200 ease-out hover:bg-white/10 active:scale-[0.96]"
                           >
                             <Link2 size={14} />
                             {link.label}
@@ -145,7 +145,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
                         ))}
                       </div>
                     ) : (
-                      <p className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
+                      <p className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-zinc-300">
                         No proof links or certificates attached yet.
                       </p>
                     )}
@@ -169,7 +169,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
                               <p className="font-semibold text-white">
                                 {certificate.title}
                               </p>
-                              <p className="mt-1 text-sm text-slate-400">
+                              <p className="mt-1 text-sm text-zinc-400">
                                 {certificate.issuer ?? "Issuer not added"}
                               </p>
                               {href ? (
@@ -183,7 +183,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
                                   <ArrowUpRight size={14} className="transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                                 </a>
                               ) : (
-                                <span className="mt-3 inline-flex items-center rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-slate-400">
+                                <span className="mt-3 inline-flex items-center rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-zinc-400">
                                   View Certificate
                                 </span>
                               )}

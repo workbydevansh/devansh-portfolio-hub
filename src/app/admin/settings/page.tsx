@@ -244,7 +244,7 @@ export default function AdminSettingsPage() {
 
       {isLoading ? (
         <GlassCard className="p-6 text-center">
-          <p className="text-sm text-slate-300">Loading settings...</p>
+          <p className="text-sm text-zinc-300">Loading settings...</p>
         </GlassCard>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -299,7 +299,7 @@ export default function AdminSettingsPage() {
               {socialLinks.length ? (
                 <table className="w-full min-w-[640px] border-collapse text-left">
                   <thead>
-                    <tr className="border-b border-white/10 text-sm text-slate-400">
+                    <tr className="border-b border-white/10 text-sm text-zinc-400">
                       <th className="py-3 pr-4 font-medium">Platform</th>
                       <th className="py-3 pr-4 font-medium">URL</th>
                       <th className="py-3 pr-4 font-medium">Order</th>
@@ -312,10 +312,10 @@ export default function AdminSettingsPage() {
                         <td className="py-3 pr-4 text-sm font-semibold text-white">
                           {link.platform}
                         </td>
-                        <td className="py-3 pr-4 text-sm text-slate-300">
+                        <td className="py-3 pr-4 text-sm text-zinc-300">
                           {link.url}
                         </td>
-                        <td className="py-3 pr-4 text-sm text-slate-300">
+                        <td className="py-3 pr-4 text-sm text-zinc-300">
                           {link.display_order ?? 0}
                         </td>
                         <td className="py-3">
@@ -323,7 +323,7 @@ export default function AdminSettingsPage() {
                             <button
                               type="button"
                               onClick={() => startEdit(link)}
-                              className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-slate-100 transition-colors duration-200 hover:bg-white/10"
+                              className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-zinc-100 transition-colors duration-200 hover:bg-white/10"
                             >
                               <Pencil size={14} />
                               Edit
@@ -343,7 +343,7 @@ export default function AdminSettingsPage() {
                   </tbody>
                 </table>
               ) : (
-                <p className="rounded-md border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
+                <p className="rounded-md border border-white/10 bg-white/[0.04] p-4 text-sm text-zinc-300">
                   No social links added yet.
                 </p>
               )}
@@ -352,7 +352,7 @@ export default function AdminSettingsPage() {
 
           <GlassCard className="p-5 sm:p-6">
             <h2 className="text-2xl font-semibold text-white">Resume</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-300">
+            <p className="mt-2 text-sm leading-6 text-zinc-300">
               Upload a PDF resume to the resume storage bucket.
             </p>
 
@@ -387,7 +387,7 @@ export default function AdminSettingsPage() {
                 Current resume URL
               </a>
             ) : (
-              <p className="mt-5 rounded-md border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
+              <p className="mt-5 rounded-md border border-white/10 bg-white/[0.04] p-4 text-sm text-zinc-300">
                 No resume uploaded yet.
               </p>
             )}

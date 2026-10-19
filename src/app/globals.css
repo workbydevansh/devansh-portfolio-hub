@@ -1,15 +1,57 @@
 @import "tailwindcss";
 
+/* The site is dark-only; `dark:` variants (used by vendored components) always apply. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #05070d;
-  --foreground: #f8fafc;
-  --muted: #94a3b8;
-  --accent: #67e8f9;
-  --glass: rgba(15, 23, 42, 0.68);
-  --glass-hover: rgba(15, 23, 42, 0.76);
-  --glass-border: rgba(148, 163, 184, 0.18);
-  --glass-border-hover: rgba(103, 232, 249, 0.32);
-  --glass-glow: rgba(103, 232, 249, 0.14);
+  /* Black + cyan: neutral near-black surfaces, cyan as the single accent. */
+  --background: #09090b;
+  --foreground: #fafafa;
+  --muted: #18181b;
+  --muted-foreground: #a1a1aa;
+  --border: rgb(255 255 255 / 0.08);
+  --accent: #22d3ee;
+  --glass: rgb(17 17 19 / 0.78);
+  --glass-hover: rgb(24 24 27 / 0.86);
+  --glass-border: rgb(255 255 255 / 0.08);
+  --glass-border-hover: rgb(34 211 238 / 0.32);
+  --glass-glow: rgb(34 211 238 / 0.12);
+
+  /* Charts (Bklit). Series and ramps are validated against the #111113 card
+     surface: slot 1 #0aa3c2, ordinal and heatmap steps cyan-900 -> cyan-300. */
+  --chart-background: #111113;
+  --chart-foreground: #fafafa;
+  --chart-foreground-muted: #a1a1aa;
+  --chart-label: #a1a1aa;
+  --chart-grid: #27272a;
+  --chart-crosshair: #52525b;
+  --chart-1: #0aa3c2;
+  --chart-2: #0e7490;
+  --chart-3: #06b6d4;
+  --chart-4: #67e8f9;
+  --chart-5: #164e63;
+  --chart-line-primary: var(--chart-1);
+  --chart-line-secondary: var(--chart-2);
+  --chart-brush-border: var(--chart-grid);
+  --chart-tooltip-background: #18181b;
+  --chart-tooltip-foreground: #fafafa;
+  --chart-tooltip-muted: #a1a1aa;
+  --chart-marker-background: #18181b;
+  --chart-marker-border: #3f3f46;
+  --chart-marker-foreground: #e4e4e7;
+  --chart-marker-badge-background: #fafafa;
+  --chart-marker-badge-foreground: #09090b;
+  --chart-indicator-color: #fafafa;
+  --chart-indicator-secondary-color: #a1a1aa;
+  --chart-segment-background: rgb(255 255 255 / 0.04);
+  --chart-segment-line: #3f3f46;
+  --chart-scale-01: #1c1c1f;
+  --chart-scale-02: #164e63;
+  --chart-scale-03: #0e7490;
+  --chart-scale-04: #06b6d4;
+  --chart-scale-05: #67e8f9;
+  --chart-scale-pattern-color: #27272a;
+  --shimmering-color: #fafafa;
 
   /* Motion tokens: every transition and keyframe reads from these. */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -19,6 +61,17 @@
   --duration-slow: 450ms;
   --duration-reveal: 700ms;
   --duration-focal: 1000ms;
+}
+
+@theme inline {
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-chart-label: var(--chart-label);
+  --color-chart-tooltip-background: var(--chart-tooltip-background);
+  --color-chart-tooltip-foreground: var(--chart-tooltip-foreground);
+  --color-chart-tooltip-muted: var(--chart-tooltip-muted);
 }
 
 @layer base {
@@ -90,7 +143,7 @@
 
 /* Unlayered on purpose: it must win over the text-white fallback utility. */
 .gradient-text {
-  background: linear-gradient(135deg, #f8fafc 0%, #67e8f9 48%, #c4b5fd 100%);
+  background: linear-gradient(135deg, #fafafa 0%, #a5f3fc 55%, #22d3ee 100%);
   background-clip: text;
   color: transparent;
 }
@@ -98,9 +151,8 @@
 @layer components {
   .gradient-aurora {
     background:
-      linear-gradient(125deg, rgba(20, 184, 166, 0.16), transparent 38%),
-      linear-gradient(230deg, rgba(99, 102, 241, 0.18), transparent 42%),
-      linear-gradient(135deg, #05070d 0%, #111827 52%, #020617 100%);
+      radial-gradient(ellipse at top, rgb(34 211 238 / 0.08), transparent 60%),
+      #09090b;
   }
 
   /* ---------- Glass cards: light follows the pointer across the surface ---------- */
@@ -112,7 +164,7 @@
     border-radius: 8px;
     background: var(--glass);
     box-shadow:
-      0 24px 80px rgba(2, 6, 23, 0.4),
+      0 24px 80px rgb(0 0 0 / 0.45),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
     transition-property: border-color, background-color, box-shadow, transform;
     transition-duration: var(--duration-base);
@@ -163,7 +215,7 @@
       border-color: var(--glass-border-hover);
       background-color: var(--glass-hover);
       box-shadow:
-        0 28px 90px rgba(2, 6, 23, 0.48),
+        0 28px 90px rgb(0 0 0 / 0.55),
         0 0 36px var(--glass-glow),
         inset 0 1px 0 rgba(255, 255, 255, 0.06);
     }
@@ -178,7 +230,7 @@
     }
   }
 
-  /* ---------- Ambient background ---------- */
+  /* ---------- Ambient background (the Drape canvas sits inside) ---------- */
 
   .ambient {
     position: fixed;
@@ -186,68 +238,7 @@
     z-index: -1;
     overflow: hidden;
     pointer-events: none;
-    background: linear-gradient(135deg, #05070d 0%, #0b1120 52%, #020617 100%);
-  }
-
-  .ambient-blob {
-    position: absolute;
-    width: 75vmax;
-    height: 75vmax;
-    border-radius: 50%;
-    will-change: transform;
-    animation-duration: 40s;
-    animation-timing-function: var(--ease-in-out);
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-  }
-
-  .ambient-blob-teal {
-    top: -38vmax;
-    left: -30vmax;
-    background: radial-gradient(closest-side, rgb(20 184 166 / 0.2), transparent);
-    animation-name: drift-teal;
-  }
-
-  .ambient-blob-indigo {
-    top: -36vmax;
-    right: -32vmax;
-    background: radial-gradient(closest-side, rgb(99 102 241 / 0.24), transparent);
-    animation-name: drift-indigo;
-    animation-duration: 52s;
-  }
-
-  .ambient-blob-cyan {
-    bottom: -48vmax;
-    left: 10vw;
-    background: radial-gradient(closest-side, rgb(34 211 238 / 0.09), transparent);
-    animation-name: drift-cyan;
-    animation-duration: 64s;
-  }
-
-  .ambient-grid {
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(rgb(148 163 184 / 0.17) 1px, transparent 1.5px);
-    background-size: 28px 28px;
-    -webkit-mask-image: radial-gradient(ellipse 85% 65% at 50% 0%, #000 15%, transparent 75%);
-    mask-image: radial-gradient(ellipse 85% 65% at 50% 0%, #000 15%, transparent 75%);
-  }
-
-  .ambient-spotlight {
-    position: absolute;
-    top: -320px;
-    left: -320px;
-    width: 640px;
-    height: 640px;
-    border-radius: 50%;
-    background: radial-gradient(closest-side, rgb(103 232 249 / 0.075), transparent);
-    opacity: 0;
-    will-change: transform;
-    transition: opacity 600ms var(--ease-out);
-  }
-
-  .ambient-spotlight[data-active="true"] {
-    opacity: 1;
+    background: radial-gradient(ellipse at 50% -20%, #101417 0%, #09090b 55%);
   }
 
   /* Fine static grain keeps the large dark gradients from banding. */
@@ -261,7 +252,7 @@
   /* ---------- Navigation surface solidifies as the page scrolls ---------- */
 
   .nav-surface {
-    background-color: rgb(2 6 23 / 0.72);
+    background-color: rgb(9 9 11 / 0.75);
     border-color: rgb(255 255 255 / 0.1);
   }
 
@@ -349,27 +340,9 @@
   }
 }
 
-@keyframes drift-teal {
-  to {
-    transform: translate3d(14vmax, 9vmax, 0) scale(1.15);
-  }
-}
-
-@keyframes drift-indigo {
-  to {
-    transform: translate3d(-12vmax, 12vmax, 0) scale(1.1);
-  }
-}
-
-@keyframes drift-cyan {
-  to {
-    transform: translate3d(18vmax, -14vmax, 0) scale(1.2);
-  }
-}
-
 @keyframes nav-solidify {
   from {
-    background-color: rgb(2 6 23 / 0.2);
+    background-color: rgb(9 9 11 / 0.2);
     border-color: rgb(255 255 255 / 0);
   }
 }
@@ -444,7 +417,6 @@
     scroll-behavior: auto;
   }
 
-  .ambient-blob,
   .skeleton::after {
     animation: none;
   }

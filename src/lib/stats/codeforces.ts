@@ -1,5 +1,6 @@
 import "server-only";
 
+import { type CodeforcesChartData, topCounts } from "@/lib/stats/chart-data";
 import { createServiceRoleSupabaseClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/supabase/types";
 
@@ -96,12 +97,59 @@ function getProblemKey(problem: CodeforcesProblem) {
   }`;
 }
 
-function countSolvedProblems(submissions: CodeforcesSubmission[]) {
-  return new Set(
+function getSolvedProblems(submissions: CodeforcesSubmission[]) {
+  const solved = new Map<string, CodeforcesProblem>();
+
+  for (const submission of submissions) {
+    if (submission.verdict === "OK") {
+      solved.set(getProblemKey(submission.problem), submission.problem);
+    }
+  }
+
+  return [...solved.values()];
+}
+
+// Calendar days in India, where the activity happens, not UTC.
+const indiaDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" });
+
+function buildChartData(
+  ratingChanges: CodeforcesRatingChange[],
+  submissions: CodeforcesSubmission[],
+  solvedProblems: CodeforcesProblem[],
+): CodeforcesChartData {
+  const oneYearAgo = Date.now() / 1000 - 371 * 24 * 60 * 60;
+  const dailySubmissions = topCounts(
     submissions
-      .filter((submission) => submission.verdict === "OK")
-      .map((submission) => getProblemKey(submission.problem)),
-  ).size;
+      .filter((submission) => submission.creationTimeSeconds >= oneYearAgo)
+      .map((submission) =>
+        indiaDate.format(submission.creationTimeSeconds * 1000),
+      ),
+    Infinity,
+  );
+  const solvedByRating = topCounts(
+    solvedProblems.flatMap((problem) =>
+      problem.rating ? [String(problem.rating)] : [],
+    ),
+    Infinity,
+  );
+
+  return {
+    ratingHistory: ratingChanges.map((change) => ({
+      date: new Date(change.ratingUpdateTimeSeconds * 1000).toISOString(),
+      rating: change.newRating,
+      contest: change.contestName,
+    })),
+    dailySubmissions: dailySubmissions
+      .map(({ label, count }) => ({ date: label, count }))
+      .sort((a, b) => a.date.localeCompare(b.date)),
+    solvedByRating: solvedByRating.sort(
+      (a, b) => Number(a.label) - Number(b.label),
+    ),
+    topTags: topCounts(
+      solvedProblems.flatMap((problem) => problem.tags ?? []),
+      8,
+    ),
+  };
 }
 
 
@@ -120,12 +168,12 @@ export async function syncCodeforcesStats(): Promise<SyncCodeforcesResult> {
     throw new Error(`Codeforces user not found: ${handle}`);
   }
 
-  const solvedCount = countSolvedProblems(submissions);
+  const solvedProblems = getSolvedProblems(submissions);
+  const solvedCount = solvedProblems.length;
   const lastUpdated = new Date().toISOString();
   const rawJson: Json = {
-    user_info: user as Json,
-    rating_changes: ratingChanges as Json,
     synced_at: lastUpdated,
+    ...buildChartData(ratingChanges, submissions, solvedProblems),
   };
 
   const supabase = createServiceRoleSupabaseClient();

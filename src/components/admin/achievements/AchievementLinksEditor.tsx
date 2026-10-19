@@ -53,7 +53,7 @@ export function AchievementLinksEditor({
           <h2 className="text-lg font-semibold text-white">
             Achievement Links
           </h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-zinc-400">
             Add required proof, project, submission, or reference links.
           </p>
         </div>
@@ -78,14 +78,14 @@ export function AchievementLinksEditor({
                   updateLink(link.id, "label", event.target.value)
                 }
                 placeholder="Label"
-                className="rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10"
+                className="rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-zinc-500 focus:border-cyan-300/40 focus:bg-white/10"
               />
               <input
                 type="url"
                 value={link.url}
                 onChange={(event) => updateLink(link.id, "url", event.target.value)}
                 placeholder="URL"
-                className="rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10"
+                className="rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-zinc-500 focus:border-cyan-300/40 focus:bg-white/10"
               />
               <button
                 type="button"
@@ -99,7 +99,7 @@ export function AchievementLinksEditor({
           ))}
         </div>
       ) : (
-        <p className="rounded-md border border-white/10 bg-white/[0.04] p-3 text-sm text-slate-300">
+        <p className="rounded-md border border-white/10 bg-white/[0.04] p-3 text-sm text-zinc-300">
           No links added.
         </p>
       )}

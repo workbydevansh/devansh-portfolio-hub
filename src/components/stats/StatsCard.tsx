@@ -1,12 +1,11 @@
 import type { CSSProperties, ReactNode } from "react";
 import { GlassCard } from "@/components/shared/GlassCard";
-import { cn } from "@/lib/utils";
 
 type StatsCardProps = {
   label: string;
   value?: number | string | null;
+  detail?: string;
   icon?: ReactNode;
-  className?: string;
 };
 
 // The real number is in the markup from the first render; each digit only
@@ -30,29 +29,25 @@ function ResolvingNumber({ text }: { text: string }) {
   );
 }
 
-export function StatsCard({ label, value, icon, className }: StatsCardProps) {
+// A headline number: the number is the chart.
+export function StatsCard({ label, value, detail, icon }: StatsCardProps) {
   const displayValue =
     typeof value === "number" ? value.toLocaleString("en") : value ?? "Not synced";
 
   return (
-    <GlassCard className={cn("p-4", className)}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm text-slate-400">{label}</p>
-          <p className="mt-2 text-2xl font-semibold text-white tabular-nums">
-            {typeof value === "number" ? (
-              <ResolvingNumber text={displayValue} />
-            ) : (
-              displayValue
-            )}
-          </p>
-        </div>
-        {icon ? (
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-cyan-300/20 bg-cyan-300/10 text-cyan-100">
-            {icon}
-          </div>
-        ) : null}
+    <GlassCard className="p-5">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-zinc-400">{label}</p>
+        {icon ? <span className="text-cyan-300">{icon}</span> : null}
       </div>
+      <p className="mt-3 text-4xl font-semibold tracking-tight text-white">
+        {typeof value === "number" ? (
+          <ResolvingNumber text={displayValue} />
+        ) : (
+          displayValue
+        )}
+      </p>
+      {detail ? <p className="mt-2 text-sm text-zinc-400">{detail}</p> : null}
     </GlassCard>
   );
 }

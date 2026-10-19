@@ -25,7 +25,7 @@ export function CertificateCard({ certificate }: CertificateCardProps) {
               label={certificate.category ?? "Other"}
               variant="info"
             />
-            <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-medium text-slate-200">
+            <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-medium text-zinc-200">
               <BadgeCheck size={13} />
               Certificate
             </span>
@@ -38,14 +38,14 @@ export function CertificateCard({ certificate }: CertificateCardProps) {
             <p className="mt-2 text-sm font-medium text-cyan-200">
               {certificate.issuer ?? "Issuer not added"}
             </p>
-            <p className="mt-3 text-sm leading-6 text-slate-300">
+            <p className="mt-3 text-sm leading-6 text-zinc-300">
               {certificate.description ?? "Description not added."}
             </p>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-              <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-400">
+              <div className="mb-2 flex items-center gap-2 text-xs font-medium text-zinc-400">
                 <CalendarDays size={14} />
                 Issue Date
               </div>
@@ -55,7 +55,7 @@ export function CertificateCard({ certificate }: CertificateCardProps) {
             </div>
             {certificate.expiry_date ? (
               <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-                <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-400">
+                <div className="mb-2 flex items-center gap-2 text-xs font-medium text-zinc-400">
                   <CalendarDays size={14} />
                   Expiry Date
                 </div>
@@ -83,7 +83,7 @@ export function CertificateCard({ certificate }: CertificateCardProps) {
                 href={credentialUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="group inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-semibold text-slate-100 transition-[background-color,scale] duration-200 ease-out hover:bg-white/10 active:scale-[0.96]"
+                className="group inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-semibold text-zinc-100 transition-[background-color,scale] duration-200 ease-out hover:bg-white/10 active:scale-[0.96]"
               >
                 Verify Credential
                 <ArrowUpRight size={14} className="transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />

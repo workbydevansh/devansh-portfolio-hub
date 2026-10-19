@@ -87,7 +87,7 @@ export function AdminTable<T extends Row>({
 
   const emptyState = (text: string) => (
     <div className="p-5">
-      <p className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
+      <p className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-zinc-300">
         {text}
       </p>
     </div>
@@ -112,7 +112,7 @@ export function AdminTable<T extends Row>({
             className={`w-full ${minWidthClassName} border-collapse text-left`}
           >
             <thead>
-              <tr className="border-b border-white/10 text-sm text-slate-400">
+              <tr className="border-b border-white/10 text-sm text-zinc-400">
                 {columns.map((column) => (
                   <th key={column.header} className="px-5 py-4 font-medium">
                     {column.header}
@@ -130,7 +130,7 @@ export function AdminTable<T extends Row>({
                       className={
                         index === 0
                           ? "px-5 py-4 text-sm font-semibold text-white"
-                          : "px-5 py-4 text-sm text-slate-300"
+                          : "px-5 py-4 text-sm text-zinc-300"
                       }
                     >
                       {column.cell(row)}
@@ -140,7 +140,7 @@ export function AdminTable<T extends Row>({
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/admin/${table}/${row.id}/edit`}
-                        className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-slate-100 transition-colors duration-200 hover:bg-white/10"
+                        className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-zinc-100 transition-colors duration-200 hover:bg-white/10"
                       >
                         <Pencil size={14} />
                         Edit

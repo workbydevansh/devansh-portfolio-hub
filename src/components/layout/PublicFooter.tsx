@@ -15,9 +15,9 @@ export function PublicFooter() {
   const { links } = useSocialLinks();
 
   return (
-    <footer className="border-t border-white/10 bg-slate-950/60">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-6 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-        <p className="font-medium text-slate-200">Devansh Portfolio Hub</p>
+    <footer className="border-t border-white/10 bg-zinc-950/60">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-6 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+        <p className="font-medium text-zinc-200">Devansh Portfolio Hub</p>
         <div className="flex flex-wrap gap-3">
           {footerLinks.map((link) => {
             const socialLink = findSocialLink(links, link.platformKeys);

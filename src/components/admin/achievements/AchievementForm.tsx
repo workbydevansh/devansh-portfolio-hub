@@ -345,7 +345,7 @@ export function AchievementForm({
   if (isLoading) {
     return (
       <GlassCard className="p-6 text-center">
-        <p className="text-sm text-slate-300">Loading achievement...</p>
+        <p className="text-sm text-zinc-300">Loading achievement...</p>
       </GlassCard>
     );
   }

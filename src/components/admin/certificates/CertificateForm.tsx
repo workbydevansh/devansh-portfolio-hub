@@ -244,7 +244,7 @@ export function CertificateForm({
   if (isLoading) {
     return (
       <GlassCard className="p-6 text-center">
-        <p className="text-sm text-slate-300">Loading certificate...</p>
+        <p className="text-sm text-zinc-300">Loading certificate...</p>
       </GlassCard>
     );
   }
@@ -317,7 +317,7 @@ export function CertificateForm({
           }}
         >
           {formState.file_path ? (
-            <p className="mt-2 text-xs text-slate-400">
+            <p className="mt-2 text-xs text-zinc-400">
               Current storage path: {formState.file_path}
             </p>
           ) : null}

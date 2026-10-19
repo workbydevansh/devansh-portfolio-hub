@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Loader2, LogIn } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -53,14 +53,14 @@ export default function AdminLoginPage() {
           <div className="mb-8 text-center">
             <DVLogo className="mx-auto mb-5 h-12 w-12" />
             <h1 className="text-3xl font-semibold text-white">Admin Login</h1>
-            <p className="mt-3 text-sm text-slate-300">
+            <p className="mt-3 text-sm text-zinc-300">
               Sign in to manage Devansh Portfolio Hub.
             </p>
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-200">
+              <span className="mb-2 block text-sm font-medium text-zinc-200">
                 Email
               </span>
               <input
@@ -68,13 +68,13 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
-                className="w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10"
+                className="w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-zinc-500 focus:border-cyan-300/40 focus:bg-white/10"
                 placeholder="admin@example.com"
               />
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-200">
+              <span className="mb-2 block text-sm font-medium text-zinc-200">
                 Password
               </span>
               <input
@@ -82,7 +82,7 @@ export default function AdminLoginPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 required
-                className="w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/10"
+                className="w-full rounded-md border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none transition-colors duration-200 placeholder:text-zinc-500 focus:border-cyan-300/40 focus:bg-white/10"
                 placeholder="Password"
               />
             </label>

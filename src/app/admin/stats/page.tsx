@@ -133,7 +133,7 @@ export default function AdminStatsPage() {
 
       {isLoading ? (
         <GlassCard className="p-6 text-center">
-          <p className="text-sm text-slate-300">Loading stats...</p>
+          <p className="text-sm text-zinc-300">Loading stats...</p>
         </GlassCard>
       ) : (
         <div className="grid gap-5 lg:grid-cols-2">
@@ -191,7 +191,7 @@ function StatItem({
 }) {
   return (
     <div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-      <dt className="text-sm text-slate-400">{label}</dt>
+      <dt className="text-sm text-zinc-400">{label}</dt>
       <dd className="mt-2 text-lg font-semibold text-white">
         {typeof value === "number"
           ? value.toLocaleString("en")

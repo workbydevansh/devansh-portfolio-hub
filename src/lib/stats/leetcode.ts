@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { LeetCodeChartData } from "@/lib/stats/chart-data";
 import { createServiceRoleSupabaseClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/supabase/types";
 
@@ -15,12 +16,21 @@ type LeetCodeProfile = {
   ranking?: number | null;
 };
 
+type LeetCodeTagCount = { tagName: string; problemsSolved: number };
+
 type LeetCodeMatchedUser = {
   username: string;
   profile?: LeetCodeProfile | null;
   submitStats?: {
     acSubmissionNum?: LeetCodeSubmissionStat[];
   } | null;
+  tagProblemCounts?: Record<string, LeetCodeTagCount[] | null> | null;
+};
+
+type LeetCodeContestHistoryEntry = {
+  attended: boolean;
+  rating: number;
+  contest: { title: string; startTime: number };
 };
 
 type LeetCodeContestRanking = {
@@ -33,6 +43,8 @@ type LeetCodeGraphQlResponse = {
   data?: {
     matchedUser?: LeetCodeMatchedUser | null;
     userContestRanking?: LeetCodeContestRanking | null;
+    userContestRankingHistory?: LeetCodeContestHistoryEntry[] | null;
+    allQuestionsCount?: { difficulty: string; count: number }[] | null;
   };
   errors?: Array<{
     message?: string;
@@ -51,6 +63,10 @@ const LEETCODE_GRAPHQL_URL = "https://leetcode.com/graphql";
 
 const LEETCODE_STATS_QUERY = `
   query userStats($username: String!) {
+    allQuestionsCount {
+      difficulty
+      count
+    }
     matchedUser(username: $username) {
       username
       profile {
@@ -63,6 +79,19 @@ const LEETCODE_STATS_QUERY = `
           submissions
         }
       }
+      tagProblemCounts {
+        advanced { tagName problemsSolved }
+        intermediate { tagName problemsSolved }
+        fundamental { tagName problemsSolved }
+      }
+    }
+    userContestRankingHistory(username: $username) {
+      attended
+      rating
+      contest {
+        title
+        startTime
+      }
     }
     userContestRanking(username: $username) {
       rating
@@ -72,6 +101,37 @@ const LEETCODE_STATS_QUERY = `
   }
 `;
 
+
+function buildChartData(
+  data: NonNullable<LeetCodeGraphQlResponse["data"]>,
+  matchedUser: LeetCodeMatchedUser,
+): LeetCodeChartData {
+  const totals = new Map(
+    (data.allQuestionsCount ?? []).map((item) => [item.difficulty, item.count]),
+  );
+  const easy = totals.get("Easy");
+  const medium = totals.get("Medium");
+  const hard = totals.get("Hard");
+
+  return {
+    contestHistory: (data.userContestRankingHistory ?? [])
+      .filter((entry) => entry.attended)
+      .map((entry) => ({
+        date: new Date(entry.contest.startTime * 1000).toISOString(),
+        rating: Math.round(entry.rating),
+        contest: entry.contest.title,
+      })),
+    questionTotals:
+      easy !== undefined && medium !== undefined && hard !== undefined
+        ? { easy, medium, hard }
+        : null,
+    topTags: Object.values(matchedUser.tagProblemCounts ?? {})
+      .flatMap((group) => group ?? [])
+      .sort((a, b) => b.problemsSolved - a.problemsSolved)
+      .slice(0, 8)
+      .map((tag) => ({ label: tag.tagName, count: tag.problemsSolved })),
+  };
+}
 
 function getSolvedCount(
   stats: LeetCodeSubmissionStat[] | undefined,
@@ -148,10 +208,8 @@ export async function syncLeetCodeStats(): Promise<SyncLeetCodeResult> {
     null;
   const lastUpdated = new Date().toISOString();
   const rawJson: Json = {
-    matched_user: matchedUser as Json,
-    user_contest_ranking:
-      (response.data?.userContestRanking as Json | undefined) ?? null,
     synced_at: lastUpdated,
+    ...(response.data ? buildChartData(response.data, matchedUser) : {}),
   };
 
   const supabase = createServiceRoleSupabaseClient();
